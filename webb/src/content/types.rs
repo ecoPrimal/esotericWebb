@@ -72,9 +72,9 @@ pub struct NpcDef {
     /// Starting trust value.
     #[serde(default)]
     pub trust_initial: i32,
-    /// Trust threshold rewards — keyed by threshold level.
+    /// Trust threshold rewards — ordered by threshold level.
     #[serde(default)]
-    pub trust_rewards: std::collections::BTreeMap<i32, NpcTrustReward>,
+    pub trust_rewards: Vec<NpcTrustReward>,
     /// Topics this NPC lies about.
     #[serde(default)]
     pub lies_about: HashMap<String, LieInfo>,
@@ -83,9 +83,32 @@ pub struct NpcDef {
     pub arc: String,
 }
 
+impl NpcDef {
+    /// Find the highest reward at or below the given trust level.
+    #[must_use]
+    pub fn reward_at_threshold(&self, trust: i32) -> Option<&NpcTrustReward> {
+        self.trust_rewards
+            .iter()
+            .filter(|r| r.threshold <= trust)
+            .max_by_key(|r| r.threshold)
+    }
+
+    /// Find all rewards that have been newly unlocked at the given trust level.
+    #[must_use]
+    pub fn rewards_between(&self, old_trust: i32, new_trust: i32) -> Vec<&NpcTrustReward> {
+        self.trust_rewards
+            .iter()
+            .filter(|r| r.threshold > old_trust && r.threshold <= new_trust)
+            .collect()
+    }
+}
+
 /// What an NPC reveals at a given trust threshold.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct NpcTrustReward {
+    /// Trust level at which this reward unlocks.
+    #[serde(default)]
+    pub threshold: i32,
     /// Human-readable description of what happens.
     #[serde(default)]
     pub description: String,
@@ -106,4 +129,119 @@ pub struct LieInfo {
     /// Difficulty class to detect the lie.
     #[serde(default)]
     pub detection_dc: i32,
+}
+
+/// A per-plane ruleset certificate — defines the mechanical rules for a
+/// narrative plane (Investigation, Dialogue, Tactical, Crafting, etc.).
+///
+/// Evolves GAP-009: replaces opaque `serde_json::Value` with a typed model
+/// that validates at load time rather than deferring to runtime checks.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RulesetCert {
+    /// The narrative plane this ruleset governs (e.g. "investigation", "combat").
+    pub plane: String,
+    /// Human-readable description of this ruleset.
+    #[serde(default)]
+    pub description: String,
+    /// Ruleset version (semver-ish).
+    #[serde(default)]
+    pub version: String,
+    /// The rules comprising this ruleset.
+    pub rules: Vec<RuleEntry>,
+    /// Difficulty modifiers (optional, per-plane tuning knobs).
+    #[serde(default)]
+    pub modifiers: Vec<RuleModifier>,
+}
+
+/// A single rule within a ruleset.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RuleEntry {
+    /// Unique rule identifier within this plane.
+    pub id: String,
+    /// Human-readable name.
+    #[serde(default)]
+    pub name: String,
+    /// What this rule does when triggered.
+    #[serde(default)]
+    pub effect: String,
+    /// Conditions under which this rule applies.
+    #[serde(default)]
+    pub conditions: Vec<String>,
+    /// Priority for conflict resolution (higher = evaluated first).
+    #[serde(default)]
+    pub priority: i32,
+}
+
+/// A difficulty/tuning modifier for a ruleset.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RuleModifier {
+    /// Modifier identifier.
+    pub id: String,
+    /// Target parameter being modified.
+    #[serde(default)]
+    pub target: String,
+    /// Modification factor (e.g. 1.5 for +50%).
+    #[serde(default = "default_factor")]
+    pub factor: f64,
+    /// Description.
+    #[serde(default)]
+    pub description: String,
+}
+
+/// Default modifier factor (no change).
+const fn default_factor() -> f64 {
+    1.0
+}
+
+impl RulesetCert {
+    /// Validate structural correctness of this ruleset.
+    #[must_use]
+    pub fn validate(&self) -> Vec<String> {
+        let mut issues = Vec::new();
+        if self.rules.is_empty() {
+            issues.push(format!(
+                "ruleset '{}': no rules defined",
+                self.plane
+            ));
+        }
+        for (i, rule) in self.rules.iter().enumerate() {
+            if rule.id.is_empty() {
+                issues.push(format!(
+                    "ruleset '{}': rule[{i}] has empty 'id'",
+                    self.plane
+                ));
+            }
+        }
+        issues
+    }
+}
+
+/// Trait for content types that have an ID field.
+pub trait HasId {
+    /// Return the content type's unique identifier.
+    fn get_id(&self) -> &str;
+}
+
+impl HasId for NpcDef {
+    fn get_id(&self) -> &str {
+        &self.id
+    }
+}
+
+impl HasId for AbilityDef {
+    fn get_id(&self) -> &str {
+        &self.id
+    }
+}
+
+impl HasId for SceneContent {
+    fn get_id(&self) -> &str {
+        &self.id
+    }
+}
+
+impl HasId for RulesetCert {
+    fn get_id(&self) -> &str {
+        &self.plane
+    }
 }

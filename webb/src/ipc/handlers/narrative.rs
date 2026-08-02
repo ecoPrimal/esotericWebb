@@ -171,7 +171,7 @@ mod tests {
                 role: String::new(),
                 knows: vec![],
                 trust_initial: 0,
-                trust_rewards: std::collections::BTreeMap::new(),
+                trust_rewards: Vec::new(),
                 lies_about: HashMap::new(),
                 arc: String::new(),
             },

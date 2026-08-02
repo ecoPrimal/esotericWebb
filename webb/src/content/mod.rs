@@ -10,7 +10,10 @@
 
 mod types;
 
-pub use types::{AbilityDef, LieInfo, NpcDef, NpcTrustReward, SceneContent, WorldMeta};
+pub use types::{
+    AbilityDef, HasId, LieInfo, NpcDef, NpcTrustReward, RuleEntry, RuleModifier, RulesetCert,
+    SceneContent, WorldMeta,
+};
 
 use std::collections::HashMap;
 use std::path::Path;
@@ -35,8 +38,8 @@ pub struct ContentBundle {
     pub abilities: HashMap<String, AbilityDef>,
     /// Scene content (keyed by `content_ref`).
     pub scenes: HashMap<String, SceneContent>,
-    /// Ruleset definitions (keyed by plane name).
-    pub rulesets: HashMap<String, serde_json::Value>,
+    /// Ruleset certificates (keyed by plane name).
+    pub rulesets: HashMap<String, RulesetCert>,
     /// Diagnostics from content loading (non-fatal issues).
     pub load_warnings: Vec<String>,
 }
@@ -64,7 +67,7 @@ impl ContentBundle {
 
         let worlds = load_raw_yaml_dir(base, "worlds");
         let npcs = load_yaml_dir_with_diag::<NpcDef>(base, "npcs", &mut warnings);
-        let rulesets = load_raw_yaml_dir(base, "rulesets");
+        let rulesets = load_yaml_dir_with_diag::<RulesetCert>(base, "rulesets", &mut warnings);
 
         Ok(Self {
             meta,
@@ -135,54 +138,14 @@ impl ContentBundle {
 
     /// Validate loaded rulesets for structural correctness.
     ///
-    /// Each ruleset YAML should declare at minimum:
-    /// - `plane` (string): the narrative plane this ruleset governs
-    /// - `rules` (array): the list of rules
-    ///
-    /// Optional but recommended:
-    /// - `version` (string): ruleset version
-    /// - `description` (string): human-readable summary
+    /// Delegates to each [`RulesetCert::validate()`] method for per-plane
+    /// validation, collecting all issues across all loaded rulesets.
     #[must_use]
     pub fn validate_rulesets(&self) -> Vec<String> {
-        let mut issues = Vec::new();
-        for (plane, ruleset) in &self.rulesets {
-            if !ruleset.is_object() {
-                issues.push(format!(
-                    "ruleset '{plane}': expected object, got {}",
-                    value_type_name(ruleset)
-                ));
-                continue;
-            }
-
-            if ruleset
-                .get("plane")
-                .and_then(serde_json::Value::as_str)
-                .is_none()
-            {
-                issues.push(format!("ruleset '{plane}': missing required 'plane' field"));
-            }
-
-            if ruleset
-                .get("rules")
-                .and_then(serde_json::Value::as_array)
-                .is_none()
-            {
-                issues.push(format!("ruleset '{plane}': missing required 'rules' array"));
-            }
-
-            if let Some(rules) = ruleset.get("rules").and_then(serde_json::Value::as_array) {
-                for (i, rule) in rules.iter().enumerate() {
-                    if !rule.is_object() {
-                        issues.push(format!("ruleset '{plane}': rule[{i}] is not an object"));
-                        continue;
-                    }
-                    if rule.get("id").and_then(serde_json::Value::as_str).is_none() {
-                        issues.push(format!("ruleset '{plane}': rule[{i}] missing 'id' field"));
-                    }
-                }
-            }
-        }
-        issues
+        self.rulesets
+            .values()
+            .flat_map(RulesetCert::validate)
+            .collect()
     }
 }
 
@@ -235,7 +198,7 @@ fn write_yaml<T: Serialize>(base: &Path, name: &str, value: &T) -> crate::error:
     Ok(())
 }
 
-fn load_yaml_with_diag<T: for<'de> Deserialize<'de> + Default>(
+fn load_yaml_with_diag<T: for<'de> Deserialize<'de> + Default + 'static>(
     base: &Path,
     name: &str,
     warnings: &mut Vec<String>,
@@ -258,7 +221,7 @@ fn load_yaml_with_diag<T: for<'de> Deserialize<'de> + Default>(
     }
 }
 
-fn load_yaml_dir_with_diag<T: for<'de> Deserialize<'de> + HasId>(
+fn load_yaml_dir_with_diag<T: for<'de> Deserialize<'de> + HasId + 'static>(
     base: &Path,
     subdir: &str,
     warnings: &mut Vec<String>,
@@ -317,41 +280,6 @@ fn load_raw_yaml_dir(base: &Path, subdir: &str) -> HashMap<String, serde_json::V
     map
 }
 
-/// Human-readable type name for validation diagnostics.
-const fn value_type_name(v: &serde_json::Value) -> &'static str {
-    match v {
-        serde_json::Value::Null => "null",
-        serde_json::Value::Bool(_) => "bool",
-        serde_json::Value::Number(_) => "number",
-        serde_json::Value::String(_) => "string",
-        serde_json::Value::Array(_) => "array",
-        serde_json::Value::Object(_) => "object",
-    }
-}
-
-/// Trait for content items that have an ID field.
-trait HasId {
-    /// Get the item's identifier.
-    fn get_id(&self) -> &str;
-}
-
-impl HasId for SceneContent {
-    fn get_id(&self) -> &str {
-        &self.id
-    }
-}
-
-impl HasId for AbilityDef {
-    fn get_id(&self) -> &str {
-        &self.id
-    }
-}
-
-impl HasId for NpcDef {
-    fn get_id(&self) -> &str {
-        &self.id
-    }
-}
 
 #[cfg(test)]
 #[path = "tests.rs"]

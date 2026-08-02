@@ -7,10 +7,10 @@ knows:
   - crime_scene_details
 trust_initial: 2
 trust_rewards:
-  3:
+  - threshold: 3
     description: "Vale flips open their notebook and walks you through the crime scene."
     grants_knowledge: [crime_scene_details]
-  5:
+  - threshold: 5
     description: "Vale hesitates, then reveals the murder weapon's identity."
     grants_knowledge: [murder_weapon]
 lies_about: {}

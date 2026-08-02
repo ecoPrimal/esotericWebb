@@ -1,0 +1,30 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+plane: occult
+version: "1.0.0"
+description: "Rules for supernatural encounters, ritual mechanics, and the Presence."
+rules:
+  - id: sigil_activation
+    name: "Sigil Activation"
+    effect: "set_flag"
+    conditions: ["has_knowledge:sigil_meanings", "in_ritual_scene"]
+    priority: 10
+  - id: presence_stir
+    name: "Presence Stir"
+    effect: "narrative_event"
+    conditions: ["turn_count_threshold", "not_resolved"]
+    priority: 7
+  - id: true_name_binding
+    name: "True Name Binding"
+    effect: "resolve_presence"
+    conditions: ["has_knowledge:true_name", "ritual_complete"]
+    priority: 20
+  - id: warding
+    name: "Warding"
+    effect: "block_presence_advance"
+    conditions: ["has_item:ward_chalk", "in_warded_scene"]
+    priority: 12
+modifiers:
+  - id: ritual_potency
+    target: true_name_binding
+    factor: 2.0
+    description: "Full ritual preparation doubles binding effectiveness"

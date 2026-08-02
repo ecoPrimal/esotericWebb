@@ -7,6 +7,6 @@ knows:
   - ritual_purpose
   - all_secrets
 trust_initial: 0
-trust_rewards: {}
+trust_rewards: []
 lies_about: {}
 arc: "dormant -> stirring -> active -> resolved"

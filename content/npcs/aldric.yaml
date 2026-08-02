@@ -8,13 +8,13 @@ knows:
   - sigil_meanings
 trust_initial: 0
 trust_rewards:
-  2:
+  - threshold: 2
     description: "Aldric peers at you over his spectacles and shares a fragment about the shop's sigils."
     grants_knowledge: [sigil_meanings]
-  4:
+  - threshold: 4
     description: "Aldric produces a crumbling journal page with the ritual's true purpose."
     grants_knowledge: [ritual_history]
-  6:
+  - threshold: 6
     description: "Aldric whispers the true name — the one that binds."
     grants_knowledge: [true_name]
 lies_about:

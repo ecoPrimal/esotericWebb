@@ -97,15 +97,13 @@ fn npc_def_yaml_roundtrip() {
         role: "proprietor".to_owned(),
         knows: vec!["elder_sign".to_owned(), "ward_locations".to_owned()],
         trust_initial: -1,
-        trust_rewards: std::collections::BTreeMap::from([(
-            3,
-            NpcTrustReward {
-                description: "Maren softens.".to_owned(),
-                grants_knowledge: vec!["maren_secret".to_owned()],
-                grants_items: vec![],
-                sets_flags: vec!["maren_trusts".to_owned()],
-            },
-        )]),
+        trust_rewards: vec![NpcTrustReward {
+            threshold: 3,
+            description: "Maren softens.".to_owned(),
+            grants_knowledge: vec!["maren_secret".to_owned()],
+            grants_items: vec![],
+            sets_flags: vec!["maren_trusts".to_owned()],
+        }],
         lies_about: HashMap::from([("ward_locations".to_owned(), LieInfo { detection_dc: 14 })]),
         arc: "suspicious → cautious → open".to_owned(),
     };
@@ -212,7 +210,7 @@ fn validate_npc_without_trust_rewards() {
             role: "merchant".to_owned(),
             knows: vec![],
             trust_initial: 0,
-            trust_rewards: std::collections::BTreeMap::new(),
+            trust_rewards: Vec::new(),
             lies_about: HashMap::new(),
             arc: String::new(),
         },
@@ -254,7 +252,7 @@ fn validate_spirit_npc_skips_trust_warning() {
             role: "spirit".to_owned(),
             knows: vec![],
             trust_initial: 0,
-            trust_rewards: std::collections::BTreeMap::new(),
+            trust_rewards: Vec::new(),
             lies_about: HashMap::new(),
             arc: String::new(),
         },
@@ -469,7 +467,7 @@ fn load_dir_loads_valid_npcs() {
         role: "vendor".to_owned(),
         knows: vec![],
         trust_initial: 0,
-        trust_rewards: std::collections::BTreeMap::new(),
+        trust_rewards: Vec::new(),
         lies_about: HashMap::new(),
         arc: String::new(),
     };
@@ -513,13 +511,14 @@ fn load_dir_loads_worlds_and_rulesets() {
     std::fs::write(dir.join("worlds/prime.yaml"), "name: Prime\ntype: physical").unwrap();
     std::fs::write(
         dir.join("rulesets/combat.yaml"),
-        "style: turn_based\ndifficulty: normal",
+        "plane: combat\nrules:\n  - id: strike\n    effect: damage\n",
     )
     .unwrap();
 
     let bundle = ContentBundle::load(dir.to_str().unwrap()).unwrap();
     assert!(bundle.worlds.contains_key("prime"));
     assert!(bundle.rulesets.contains_key("combat"));
+    assert_eq!(bundle.rulesets["combat"].rules.len(), 1);
 
     let _ = std::fs::remove_dir_all(&dir);
 }
@@ -545,7 +544,7 @@ fn validate_valid_bundle_no_extra_issues() {
             role: "spirit".to_owned(),
             knows: vec![],
             trust_initial: 0,
-            trust_rewards: std::collections::BTreeMap::new(),
+            trust_rewards: Vec::new(),
             lies_about: HashMap::new(),
             arc: String::new(),
         },
@@ -582,13 +581,17 @@ fn validate_valid_bundle_no_extra_issues() {
 }
 
 #[test]
-fn validate_ruleset_missing_plane_field() {
+fn validate_ruleset_no_rules_reports_issue() {
     let mut rulesets = HashMap::new();
     rulesets.insert(
         "combat".to_owned(),
-        serde_json::json!({
-            "rules": [{"id": "r1", "effect": "damage"}]
-        }),
+        RulesetCert {
+            plane: "combat".to_owned(),
+            description: String::new(),
+            version: String::new(),
+            rules: vec![],
+            modifiers: vec![],
+        },
     );
     let bundle = ContentBundle {
         meta: WorldMeta::default(),
@@ -600,22 +603,28 @@ fn validate_ruleset_missing_plane_field() {
         rulesets,
         load_warnings: Vec::new(),
     };
-    let issues = bundle.validate();
-    assert!(
-        issues
-            .iter()
-            .any(|i| i.contains("missing required 'plane'"))
-    );
+    let issues = bundle.validate_rulesets();
+    assert!(issues.iter().any(|i| i.contains("no rules defined")));
 }
 
 #[test]
-fn validate_ruleset_missing_rules_array() {
+fn validate_ruleset_rule_empty_id() {
     let mut rulesets = HashMap::new();
     rulesets.insert(
         "combat".to_owned(),
-        serde_json::json!({
-            "plane": "combat"
-        }),
+        RulesetCert {
+            plane: "combat".to_owned(),
+            description: String::new(),
+            version: String::new(),
+            rules: vec![RuleEntry {
+                id: String::new(),
+                name: "Unnamed".to_owned(),
+                effect: "damage".to_owned(),
+                conditions: vec![],
+                priority: 0,
+            }],
+            modifiers: vec![],
+        },
     );
     let bundle = ContentBundle {
         meta: WorldMeta::default(),
@@ -627,36 +636,8 @@ fn validate_ruleset_missing_rules_array() {
         rulesets,
         load_warnings: Vec::new(),
     };
-    let issues = bundle.validate();
-    assert!(
-        issues
-            .iter()
-            .any(|i| i.contains("missing required 'rules'"))
-    );
-}
-
-#[test]
-fn validate_ruleset_rule_missing_id() {
-    let mut rulesets = HashMap::new();
-    rulesets.insert(
-        "combat".to_owned(),
-        serde_json::json!({
-            "plane": "combat",
-            "rules": [{"effect": "damage"}]
-        }),
-    );
-    let bundle = ContentBundle {
-        meta: WorldMeta::default(),
-        narrative: NarrativeGraph::default(),
-        worlds: HashMap::new(),
-        npcs: HashMap::new(),
-        abilities: HashMap::new(),
-        scenes: HashMap::new(),
-        rulesets,
-        load_warnings: Vec::new(),
-    };
-    let issues = bundle.validate();
-    assert!(issues.iter().any(|i| i.contains("rule[0] missing 'id'")));
+    let issues = bundle.validate_rulesets();
+    assert!(issues.iter().any(|i| i.contains("empty 'id'")));
 }
 
 #[test]
@@ -664,15 +645,28 @@ fn validate_valid_ruleset_no_issues() {
     let mut rulesets = HashMap::new();
     rulesets.insert(
         "combat".to_owned(),
-        serde_json::json!({
-            "plane": "combat",
-            "version": "1.0.0",
-            "description": "Combat rules for shadow plane",
-            "rules": [
-                {"id": "damage_calc", "type": "formula", "formula": "str * weapon_mod"},
-                {"id": "initiative", "type": "check", "stat": "dexterity"}
-            ]
-        }),
+        RulesetCert {
+            plane: "combat".to_owned(),
+            version: "1.0.0".to_owned(),
+            description: "Combat rules for shadow plane".to_owned(),
+            rules: vec![
+                RuleEntry {
+                    id: "damage_calc".to_owned(),
+                    name: "Damage Calculation".to_owned(),
+                    effect: "str * weapon_mod".to_owned(),
+                    conditions: vec![],
+                    priority: 0,
+                },
+                RuleEntry {
+                    id: "initiative".to_owned(),
+                    name: "Initiative Roll".to_owned(),
+                    effect: "dexterity check".to_owned(),
+                    conditions: vec![],
+                    priority: 10,
+                },
+            ],
+            modifiers: vec![],
+        },
     );
     let bundle = ContentBundle {
         meta: WorldMeta::default(),

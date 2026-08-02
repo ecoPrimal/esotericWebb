@@ -130,6 +130,9 @@ impl PrimalRegistry {
         // Phase 4: Well-known HTTP endpoints (primals using HTTP transport)
         registry.discover_http_well_known();
 
+        // Phase 5: Well-known TCP ports for NDJSON primals
+        registry.discover_tcp_well_known();
+
         registry
     }
 
@@ -317,36 +320,93 @@ impl PrimalRegistry {
 
     /// Probe well-known HTTP endpoints for primals that use HTTP transport.
     ///
-    /// Currently: songBird on `127.0.0.1:7780/jsonrpc` (mesh domain).
-    /// Only probes if the domain isn't already discovered via other means.
+    /// Primals that expose HTTP surfaces (JSON-RPC or REST) are probed at
+    /// well-known ports. This enables zero-config discovery of web-facing
+    /// primals without requiring env vars.
+    ///
+    /// Discovery is capability-based: if a domain is already reachable via
+    /// UDS or TCP, the HTTP probe is skipped.
     fn discover_http_well_known(&mut self) {
         use super::primal_names::domain;
 
-        const WELL_KNOWN_HTTP: &[(&str, &str, &str, u16)] =
-            &[(domain::MESH, "songbird", "/jsonrpc", 7780)];
+        struct WellKnownHttp {
+            domain: &'static str,
+            name: &'static str,
+            path: &'static str,
+            ports: &'static [u16],
+        }
 
-        for &(domain, name, path, port) in WELL_KNOWN_HTTP {
+        let well_known: &[WellKnownHttp] = &[
+            WellKnownHttp {
+                domain: domain::MESH,
+                name: "songbird",
+                path: "/jsonrpc",
+                ports: &[7700, 7780, 8080],
+            },
+            WellKnownHttp {
+                domain: domain::VISUALIZATION,
+                name: "petaltongue",
+                path: "/health",
+                ports: &[3001, 3000, 8090],
+            },
+        ];
+
+        for entry in well_known {
+            if let Some(ep) = self.by_domain.get(entry.domain) {
+                if ep.http_url.is_some() || ep.tcp_addr.is_some() || ep.socket_path.is_some() {
+                    continue;
+                }
+            }
+
+            for &port in entry.ports {
+                let addr = format!("{}:{port}", super::default_host());
+                let Ok(socket_addr) = addr.parse() else {
+                    continue;
+                };
+                if TcpStream::connect_timeout(&socket_addr, Duration::from_millis(200)).is_ok() {
+                    let url = format!("http://{addr}{}", entry.path);
+                    let ep = self
+                        .by_domain
+                        .entry(entry.domain.to_owned())
+                        .or_insert_with(|| PrimalEndpoint::empty(entry.domain, entry.name));
+                    ep.http_url = Some(url);
+                    break;
+                }
+            }
+        }
+    }
+
+    /// Probe well-known TCP ports for NDJSON primals (e.g. nestGate).
+    ///
+    /// For primals that speak raw NDJSON over TCP (not HTTP), this probes
+    /// known ports and registers them as TCP addresses for direct connection.
+    fn discover_tcp_well_known(&mut self) {
+        use super::primal_names::domain;
+
+        const WELL_KNOWN_TCP: &[(&str, &str, &[u16])] = &[
+            (domain::STORAGE, "nestgate", &[8080, 8083, 8091]),
+        ];
+
+        for &(domain, name, ports) in WELL_KNOWN_TCP {
             if let Some(ep) = self.by_domain.get(domain) {
                 if ep.http_url.is_some() || ep.tcp_addr.is_some() || ep.socket_path.is_some() {
                     continue;
                 }
             }
 
-            let addr = format!("{}:{port}", super::default_host());
-            if TcpStream::connect_timeout(
-                &addr
-                    .parse()
-                    .unwrap_or_else(|_| std::net::SocketAddr::from(([127, 0, 0, 1], port))),
-                Duration::from_millis(200),
-            )
-            .is_ok()
-            {
-                let url = format!("http://{addr}{path}");
-                let ep = self
-                    .by_domain
-                    .entry(domain.to_owned())
-                    .or_insert_with(|| PrimalEndpoint::empty(domain, name));
-                ep.http_url = Some(url);
+            for &port in ports {
+                let addr = format!("{}:{port}", super::default_host());
+                let Ok(socket_addr) = addr.parse() else {
+                    continue;
+                };
+                if TcpStream::connect_timeout(&socket_addr, Duration::from_millis(200)).is_ok() {
+                    let ep = self
+                        .by_domain
+                        .entry(domain.to_owned())
+                        .or_insert_with(|| PrimalEndpoint::empty(domain, name));
+                    ep.tcp_addr = Some(addr);
+                    break;
+                }
             }
         }
     }

@@ -42,7 +42,7 @@ role: their role
 knows: [knowledge_key_1, knowledge_key_2]
 trust_initial: 0
 trust_rewards:
-  <level>:
+  - threshold: <level>
     description: "What happens at this trust level."
     grants_knowledge: [key]   # optional
     grants_items: [item]      # optional

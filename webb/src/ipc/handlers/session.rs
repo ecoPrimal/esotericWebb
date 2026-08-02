@@ -10,7 +10,7 @@ use super::SharedSession;
 
 /// `session.start` — initialize a new game session from content path.
 ///
-/// Preserves the [`PrimalBridge`] from any previous session so primal
+/// Preserves the [`crate::ipc::bridge::PrimalBridge`] from any previous session so primal
 /// composition capabilities survive session restarts.
 pub(super) fn handle_session_start(
     params: Option<&Value>,
@@ -254,7 +254,7 @@ mod tests {
                 role: String::new(),
                 knows: vec![],
                 trust_initial: 0,
-                trust_rewards: std::collections::BTreeMap::new(),
+                trust_rewards: Vec::new(),
                 lies_about: HashMap::new(),
                 arc: String::new(),
             },

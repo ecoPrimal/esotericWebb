@@ -1,0 +1,25 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+plane: investigation
+version: "1.0.0"
+description: "Rules governing clue discovery, evidence analysis, and deduction sequences."
+rules:
+  - id: clue_discovery
+    name: "Clue Discovery"
+    effect: "grants_knowledge"
+    conditions: ["scene_has_clues", "not_already_found"]
+    priority: 10
+  - id: evidence_chain
+    name: "Evidence Chain"
+    effect: "unlock_deduction"
+    conditions: ["has_required_clues"]
+    priority: 5
+  - id: interrogation_pressure
+    name: "Interrogation Pressure"
+    effect: "modify_trust"
+    conditions: ["npc_present", "has_evidence"]
+    priority: 3
+modifiers:
+  - id: thorough_search
+    target: clue_discovery
+    factor: 1.5
+    description: "Examining scenes carefully increases clue yield"

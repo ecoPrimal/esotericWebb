@@ -119,7 +119,15 @@ impl PrimalBridge {
                 if !healthy {
                     if let Some(ref url) = ep.http_url {
                         if let Some((addr, path)) = parse_http_url(url) {
-                            if let Ok(mut client) = PrimalClient::connect_http(&addr, &path, name) {
+                            if path.contains("health") {
+                                let timeout = std::time::Duration::from_secs(2);
+                                if super::client_http::probe_rest_health(&addr, &path, timeout) {
+                                    healthy = true;
+                                    transport_used = Some(format!("http:{url}"));
+                                }
+                            } else if let Ok(mut client) =
+                                PrimalClient::connect_http(&addr, &path, name)
+                            {
                                 if client.health_liveness().unwrap_or(false) {
                                     healthy = true;
                                     transport_used = Some(format!("http:{url}"));

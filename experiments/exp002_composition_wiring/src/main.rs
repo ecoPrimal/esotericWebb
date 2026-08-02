@@ -40,8 +40,8 @@ fn main() {
     check_bool("AI summarize degrades", summary.contains("unavailable"));
 
     check_bool(
-        "render_scene is noop",
-        bridge.render_scene(&serde_json::json!({})).is_ok(),
+        "render_scene requires primal (returns PrimalNotFound when absent)",
+        bridge.render_scene(&serde_json::json!({})).is_err(),
     );
     check_bool(
         "compute_submit returns None",

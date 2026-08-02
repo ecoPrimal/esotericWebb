@@ -1,0 +1,25 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+plane: dialogue
+version: "1.0.0"
+description: "Rules for NPC conversations, trust dynamics, and lie detection."
+rules:
+  - id: trust_increment
+    name: "Trust Increment"
+    effect: "increment_trust"
+    conditions: ["npc_present"]
+    priority: 10
+  - id: lie_detection
+    name: "Lie Detection"
+    effect: "reveal_deception"
+    conditions: ["npc_lies_about_topic", "perception_check"]
+    priority: 8
+  - id: reward_threshold
+    name: "Reward Threshold"
+    effect: "trigger_trust_reward"
+    conditions: ["trust_meets_threshold"]
+    priority: 15
+  - id: arc_progression
+    name: "Arc Progression"
+    effect: "advance_npc_arc"
+    conditions: ["trust_delta_positive", "in_narrative_moment"]
+    priority: 5

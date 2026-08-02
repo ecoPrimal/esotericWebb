@@ -7,9 +7,9 @@ knows:
   - financial_records
 trust_initial: 0
 trust_rewards:
-  1:
+  - threshold: 1
     description: "Tobias fidgets, making small talk about the shop's inventory."
-  3:
+  - threshold: 3
     description: "Tobias sighs and admits he owes Maren a great deal of money."
     grants_knowledge: [financial_records]
 lies_about:

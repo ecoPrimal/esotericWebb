@@ -231,8 +231,8 @@ impl GameDirector {
 
         let mut narration_parts: Vec<String> = vec![format!("You speak with {}.", npc.name)];
 
-        for (&threshold, reward) in &npc.trust_rewards {
-            if old_trust < threshold && new_trust >= threshold {
+        for reward in &npc.trust_rewards {
+            if old_trust < reward.threshold && new_trust >= reward.threshold {
                 if !reward.description.is_empty() {
                     narration_parts.push(reward.description.clone());
                 }
@@ -406,7 +406,7 @@ mod tests {
                 role: "proprietor".to_owned(),
                 knows: vec![],
                 trust_initial: 0,
-                trust_rewards: std::collections::BTreeMap::new(),
+                trust_rewards: Vec::new(),
                 lies_about: HashMap::new(),
                 arc: String::new(),
             },
@@ -679,17 +679,15 @@ mod tests {
 
     fn content_with_trust_rewards() -> ContentBundle {
         let mut content = test_content();
-        let mut rewards = std::collections::BTreeMap::new();
-        rewards.insert(
-            2,
+        content.npcs.get_mut("maren").unwrap().trust_rewards = vec![
             crate::content::NpcTrustReward {
+                threshold: 2,
                 description: "Maren opens a hidden drawer.".to_owned(),
                 grants_knowledge: vec!["drawer_secret".to_owned()],
                 grants_items: vec!["silver_key".to_owned()],
                 sets_flags: vec!["maren_trusts_you".to_owned()],
             },
-        );
-        content.npcs.get_mut("maren").unwrap().trust_rewards = rewards;
+        ];
         content
     }
 

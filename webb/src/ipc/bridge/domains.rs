@@ -28,7 +28,7 @@ use crate::ipc::petaltongue::{
 use crate::ipc::primal_names::domain;
 use crate::ipc::squirrel::{
     ChatResponse, DialogueResponse, METHOD_AI_ANALYZE, METHOD_AI_QUERY, METHOD_AI_SUGGEST,
-    VoiceNote,
+    METHOD_SIGNAL_PLAN, SignalPlanResponse, ToolDef, VoiceNote,
 };
 use crate::ipc::{
     METHOD_CERT_MINT, METHOD_COMPUTE_SUBMIT, METHOD_CRYPTO_HASH, METHOD_CRYPTO_SIGN,
@@ -180,6 +180,41 @@ impl PrimalBridge {
     /// Returns [`IpcError`] if the call fails unexpectedly.
     pub fn voice_check(&mut self, params: &serde_json::Value) -> Result<Vec<VoiceNote>, IpcError> {
         self.call_or_default(domain::AI, METHOD_AI_ANALYZE, params.clone(), Vec::new())
+    }
+
+    /// Plan a multi-step action via squirrel's `signal.plan` (G18 dispatch).
+    ///
+    /// Sends a prompt and available tools to squirrel, which returns a planned
+    /// sequence of tool invocations. Returns `None` if the AI domain is absent
+    /// or does not support `signal.plan`.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`IpcError`] on transport failure.
+    pub fn signal_plan(
+        &mut self,
+        prompt: &str,
+        tools: &[ToolDef],
+    ) -> Result<Option<SignalPlanResponse>, IpcError> {
+        if !self.has(domain::AI) {
+            return Ok(None);
+        }
+        let params = serde_json::json!({
+            "prompt": prompt,
+            "tools": tools,
+        });
+        match self.resilient_call(domain::AI, METHOD_SIGNAL_PLAN, params) {
+            Ok(resp) => {
+                if let Some(result) = resp.result {
+                    if let Ok(plan) = serde_json::from_value::<SignalPlanResponse>(result) {
+                        return Ok(Some(plan));
+                    }
+                }
+                Ok(None)
+            }
+            Err(IpcError::MethodNotFound { .. }) => Ok(None),
+            Err(e) => Err(e),
+        }
     }
 
     // ── Visualization domain (petalTongue) ─────────────────

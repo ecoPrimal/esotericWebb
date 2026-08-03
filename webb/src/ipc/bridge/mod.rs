@@ -753,4 +753,16 @@ mod tests {
             .unwrap();
         assert!(result.is_none());
     }
+
+    #[test]
+    fn standalone_signal_plan_returns_none() {
+        let mut bridge = PrimalBridge::standalone();
+        let tools = vec![crate::ipc::squirrel::ToolDef {
+            name: "session.act".to_owned(),
+            description: "Perform an action".to_owned(),
+            parameters: serde_json::json!({}),
+        }];
+        let result = bridge.signal_plan("test prompt", &tools).unwrap();
+        assert!(result.is_none());
+    }
 }

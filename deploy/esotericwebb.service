@@ -1,0 +1,33 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+# esotericWebb live cell — systemd user unit for ironGate downstream hosting.
+#
+# This unit runs esotericWebb in composition mode (no --launch), relying on
+# ironGate's NUCLEUS membrane services for all primal dependencies.
+#
+# Install:
+#   cp deploy/esotericwebb.service ~/.config/systemd/user/
+#   systemctl --user daemon-reload
+#   systemctl --user enable --now esotericwebb.service
+#
+# The service:
+#   - Discovers 8/9 primals from NUCLEUS membrane (BTSP, UDS, TCP, HTTP)
+#   - Listens on TCP 127.0.0.1:8090 (IPC) and UDS (biomeOS composition)
+#   - Announces itself to biomeOS neural-api on startup
+#   - Gracefully degrades when optional primals (toadStool) are absent
+
+[Unit]
+Description=Esoteric Webb CRPG — live cell on ironGate
+After=membrane-nucleus@beardog.service membrane-nucleus@songbird.service
+Wants=membrane-nucleus@squirrel.service membrane-nucleus@petaltongue.service
+
+[Service]
+Type=simple
+ExecStart=%h/Development/ecoPrimals/gardens/esotericWebb/target/release/esotericwebb serve --content %h/Development/ecoPrimals/gardens/esotericWebb/content --port 8090
+Restart=on-failure
+RestartSec=5
+Environment=RUST_LOG=info
+Environment=XDG_RUNTIME_DIR=/run/user/%U
+
+[Install]
+WantedBy=default.target

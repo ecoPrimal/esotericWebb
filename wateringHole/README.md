@@ -36,7 +36,9 @@ wateringHole/
 
 ## Active handoffs
 
-_None. All handoffs archived — V22 is green on all dimensions._
+| Handoff | Direction | Summary |
+|---------|-----------|---------|
+| `ESOTERICWEBB_V26_IRONGATE_DEEP_DEBT_AUG03_2026.md` | Outbound | V23–V26 deep debt on ironGate, 8/9 live, patterns for upstream |
 
 ## Archived handoffs (fossil record)
 

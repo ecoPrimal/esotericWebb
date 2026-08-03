@@ -178,31 +178,13 @@ Webb exercises primal composition -> discovers gap in a primal capability
 - **Handoff**: N/A (self-owned)
 - **Status**: open
 
-### GAP-009: RulesetCert YAML authoring and per-plane validation
+### ~~GAP-009~~: RulesetCert YAML authoring and per-plane validation → RESOLVED (V23, 2026-08-02)
 
-- **Primal**: game science (future `science.ruleset_validate`, GAP-021)
-- **Spring (producer)**: esotericWebb (self) + future game-science primal
-- **Severity**: medium
-- **Evidence**: Cliche Studio's creative DNA (transparent dice, multi-plane
-  play) requires RulesetCert definitions per plane (Investigation, Dialogue,
-  Tactical, Crafting). The CONTENT_AUTHORING_SPEC defines a rulesets/
-  directory but the content loader does not yet parse or validate RulesetCert
-  YAML against any schema. V6 absorbed flow/engagement/DDA locally but
-  RulesetCert validation remains unimplemented.
-- **Expected**: YAML rulesets/ loaded, validated against a schema. `esotericwebb
-  validate` reports ruleset errors. When a game-science primal emerges
-  (GAP-021), `science.ruleset_validate` confirms compatibility at composition
-  time.
-- **Progress (V11)**: `ContentBundle::validate_rulesets()` now validates
-  structural correctness of loaded rulesets: required `plane` field, required
-  `rules` array, per-rule `id` field. Four new tests cover missing fields,
-  invalid structure, and valid rulesets. `esotericwebb validate` reports
-  ruleset issues alongside other content diagnostics.
-- **Next**: Typed `RulesetCert` struct (replace opaque `serde_json::Value`),
-  per-rule effect/condition validation, game-science primal integration.
-- **Handoff**: Self-owned for loader; future game-science primal for
-  validation endpoint (GAP-021).
-- **Status**: partial (structural validation complete, typed model pending)
+- **Status**: resolved — Typed `RulesetCert`, `RuleEntry`, `RuleModifier` structs
+  replace opaque `serde_json::Value`. Content authored in `content/rulesets/`
+  (investigation, dialogue, occult planes). `RulesetCert::validate()` enforces
+  structural correctness at load time. `HasId` trait enables uniform validation.
+  YAML 1.2 compliant via noyalib. Game-science primal integration deferred to GAP-021.
 
 ### ~~GAP-010~~: plasmidBin population → RESOLVED (Wave 150a)
 

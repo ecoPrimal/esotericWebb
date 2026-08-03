@@ -2,28 +2,31 @@
 
 | | |
 |---|---|
-| **Version** | V22 |
-| **Tests** | 453 |
+| **Version** | V26 |
+| **Tests** | 455 |
 | **Rust files** | 58 (~17k LOC) |
 | **Experiments** | 6 (exp001–exp006) |
 | **MSRV** | 1.87 (edition 2024) |
 | **License** | AGPL-3.0 + ORC + CC-BY-SA 4.0 |
-| **Unsafe** | `#![forbid(unsafe_code)]` (crate-level) |
-| **C deps** | Zero (ecoBin compliant) |
+| **Unsafe** | `#![forbid(unsafe_code)]` (workspace-level) |
+| **C deps** | Zero — all pure Rust (noyalib replaced C libyaml) |
 | **Prod unwraps** | 0 |
-| **Files >800L** | 0 |
+| **Files >800L** | 0 (max: director/mod.rs 751L) |
 | **Bridge methods** | 33 (all domains, all degrading, composition-first) |
 | **Capabilities exposed** | 27 (sourDough + lifecycle + narrative + session + introspection + MCP) |
 | **Primals consumed** | 9 domains (ai, viz, dag, lineage, compute, storage, provenance, crypto, mesh) |
-| **Live primals (flockGate)** | 6/9 healthy |
-| **Transports** | NDJSON/TCP, UDS, HTTP POST (`/jsonrpc`) |
+| **Live primals (ironGate)** | 8/9 healthy (zero-config discovery) |
+| **Transports** | NDJSON/TCP, UDS, UDS+BTSP, HTTP POST (`/jsonrpc`), REST health |
 | **Frontend** | `webb.primals.eco` — self-contained HTML, zero external deps |
 | **Scene push** | `visualization.render.scene` (game_scene) with `ui.render` fallback |
-| **Last validation** | 2026-07-21 (V22) |
+| **Discovery** | 5-tier: biomeOS XDG, `/run/membrane`, env override, TCP well-known, HTTP REST |
+| **Cell graph** | `graphs/esotericwebb_cell.toml` — biomeOS composition topology |
+| **Last validation** | 2026-08-03 (V26, ironGate NUCLEUS) |
 
 **A [sporeGarden](https://github.com/sporeGarden) project — the primals as a composed CRPG.**
 
-**Live**: `webb.primals.eco` (flockGate:8090, subdomain standard Wave 150d)
+**Live**: `webb.primals.eco` (flockGate:8090, subdomain standard Wave 150d)  
+**First boot target**: ironGate NUCLEUS (8/9 primals, systemd user unit)
 
 Esoteric Webb is not a spring. It is a standalone cross-evolution substrate
 that composes deployed primals (genomeBins/ecoBins from `plasmidBin/`) into
@@ -59,17 +62,17 @@ engine**. It consumes primals via JSON-RPC IPC — zero Rust crate dependencies
 on any spring. Primals are resolved from `plasmidBin/` or discovered via
 Songbird at runtime.
 
-| Domain | Primal | Role | Status (V22) | Key IPC methods |
+| Domain | Primal | Role | Status (V26, ironGate) | Key IPC methods |
 |--------|--------|------|-------------|-----------------|
-| ai | Squirrel | AI narration, NPC dialogue, inference | **Live** | `ai.query`, `ai.suggest`, `ai.analyze` |
-| visualization | petalTongue | Scene rendering, input polling | **Live** | `visualization.render.scene`, `ui.render`, `interaction.poll` |
-| dag | rhizoCrypt | Provenance DAG lifecycle | Offline | `dag.session.create`, `dag.event.append`, `dag.merkle.root` |
-| lineage | loamSpine | NPC personality certs | **Live** | `certificate.mint` |
-| compute | toadStool | GPU compute dispatch | Offline | `compute.dispatch.submit` |
-| storage | nestGate | Key-value persistence | **Live** | `storage.store`, `storage.retrieve` |
-| provenance | sweetGrass | Creative attribution | **Live** | `braid.create`, `braid.query` |
-| crypto | bearDog | Signing, verification, hashing | **Live** | `crypto.sign`, `crypto.verify`, `crypto.hash` |
-| mesh | songBird | Topology, discovery, bonds | Discovered (HTTP) | `discovery.topology`, `discovery.health`, `discovery.bonds` |
+| ai | Squirrel | AI narration, NPC dialogue, inference | **Live** (UDS) | `ai.query`, `ai.suggest`, `signal.plan` |
+| visualization | petalTongue | Scene rendering, input polling | **Live** (REST+UDS) | `visualization.render.scene`, `ui.render`, `interaction.poll` |
+| dag | rhizoCrypt | Provenance DAG lifecycle | **Live** (UDS) | `dag.session.create`, `dag.event.append`, `dag.merkle.root` |
+| lineage | loamSpine | NPC personality certs | **Live** (UDS) | `certificate.mint` |
+| compute | toadStool | GPU compute dispatch | Offline (misconfigured unit) | `compute.dispatch.submit` |
+| storage | nestGate | Key-value persistence | **Live** (TCP:8080) | `storage.store`, `storage.retrieve` |
+| provenance | sweetGrass | Creative attribution | **Live** (UDS+BTSP) | `braid.create`, `braid.query` |
+| crypto | bearDog | Signing, verification, hashing | **Live** (UDS) | `crypto.sign`, `crypto.verify`, `crypto.hash` |
+| mesh | songBird | Topology, discovery, bonds | **Live** (HTTP:7700) | `discovery.topology`, `discovery.health`, `discovery.bonds` |
 
 ## The Core Thesis: Bounded Space, Infinite Exploration
 

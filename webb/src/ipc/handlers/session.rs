@@ -165,6 +165,46 @@ pub(super) fn handle_session_poll_input(session: &SharedSession) -> Result<Value
     })
 }
 
+/// `signal.dispatch` — execute a planned step from squirrel G18 dispatch.
+///
+/// Accepts a single step (`tool` + `args`) and routes it to the appropriate
+/// handler. This allows squirrel to plan multi-step sequences via `signal.plan`
+/// and dispatch each step to Webb as an individual JSON-RPC call.
+///
+/// Supported tools: `session.act`, `session.start`, `session.state`,
+/// `session.actions`, `webb.scene.current`, `session.narrate`.
+pub(super) fn handle_signal_dispatch(
+    params: Option<&Value>,
+    session: &SharedSession,
+) -> Result<Value, JsonRpcError> {
+    let tool = params
+        .and_then(|p| p.get("tool"))
+        .and_then(Value::as_str)
+        .ok_or_else(|| JsonRpcError::invalid_params("missing 'tool' field"))?;
+
+    let args = params
+        .and_then(|p| p.get("args"))
+        .cloned()
+        .unwrap_or(Value::Null);
+
+    let step_params = if args.is_null() { None } else { Some(&args) };
+
+    match tool {
+        "session.act" => handle_session_act(step_params, session),
+        "session.start" => handle_session_start(step_params, session),
+        "session.state" => handle_session_state(session),
+        "session.actions" => handle_session_actions(session),
+        "session.history" => handle_session_history(session),
+        "session.narrate" => handle_session_narrate(session),
+        "session.graph" => handle_session_graph(session),
+        "session.metrics" => handle_session_metrics(session),
+        "session.poll_input" => handle_session_poll_input(session),
+        _ => Err(JsonRpcError::method_not_found(format!(
+            "signal.dispatch: unknown tool '{tool}'"
+        ))),
+    }
+}
+
 #[cfg(test)]
 #[expect(clippy::unwrap_used, reason = "test code")]
 mod tests {

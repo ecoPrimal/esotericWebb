@@ -158,3 +158,13 @@ description = "MCP tool enumeration for AI agent discovery"
 method = "tools.call"
 description = "MCP tool invocation for AI agent interaction"
 params = "{ name: string, arguments: object }"
+
+# ── Signal dispatch (G18 inbound) ──
+
+[signal]
+stability = "evolving"
+
+[[capabilities]]
+method = "signal.dispatch"
+description = "Execute a planned step from squirrel G18 signal dispatch — routes tool invocations to session handlers"
+params = "{ tool: string, args: object }"

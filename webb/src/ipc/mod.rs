@@ -202,3 +202,8 @@ pub const METHOD_SESSION_GRAPH: &str = "session.graph";
 pub const METHOD_SESSION_METRICS: &str = "session.metrics";
 /// Poll petalTongue for pending player input events.
 pub const METHOD_SESSION_POLL_INPUT: &str = "session.poll_input";
+
+// ── Signal dispatch (G18 inbound) ────────────────────────
+
+/// Execute a planned step dispatched by squirrel `signal.dispatch`.
+pub const METHOD_SIGNAL_DISPATCH: &str = "signal.dispatch";

@@ -386,9 +386,8 @@ impl PrimalRegistry {
     fn discover_tcp_well_known(&mut self) {
         use super::primal_names::domain;
 
-        const WELL_KNOWN_TCP: &[(&str, &str, &[u16])] = &[
-            (domain::STORAGE, "nestgate", &[8080, 8083, 8091]),
-        ];
+        const WELL_KNOWN_TCP: &[(&str, &str, &[u16])] =
+            &[(domain::STORAGE, "nestgate", &[8080, 8083, 8091])];
 
         for &(domain, name, ports) in WELL_KNOWN_TCP {
             if let Some(ep) = self.by_domain.get(domain) {

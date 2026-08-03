@@ -280,7 +280,6 @@ fn load_raw_yaml_dir(base: &Path, subdir: &str) -> HashMap<String, serde_json::V
     map
 }
 
-
 #[cfg(test)]
 #[path = "tests.rs"]
 mod tests;

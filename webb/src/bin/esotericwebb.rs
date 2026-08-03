@@ -141,8 +141,7 @@ fn main() {
             listen,
             port,
         } => {
-            let listen_addr =
-                listen.or_else(|| port.map(esoteric_webb::ipc::host_port));
+            let listen_addr = listen.or_else(|| port.map(esoteric_webb::ipc::host_port));
             commands::cmd_serve(&content, launch, &graph, listen_addr.as_deref())
         }
         Command::Validate { content, all } => {

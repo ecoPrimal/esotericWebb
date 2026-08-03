@@ -203,10 +203,7 @@ mod tests {
 
     #[test]
     fn signal_dispatch_missing_tool_errors() {
-        let req = JsonRpcRequest::new(
-            "signal.dispatch",
-            Some(serde_json::json!({"args": {}})),
-        );
+        let req = JsonRpcRequest::new("signal.dispatch", Some(serde_json::json!({"args": {}})));
         let resp = dispatch(&req);
         assert!(resp.error.is_some());
         let err = resp.error.unwrap();

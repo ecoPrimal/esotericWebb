@@ -55,8 +55,7 @@ fn connect_transport_tcp_creates_tcp_transport() {
         reader.read_line(&mut line).unwrap();
         let req: serde_json::Value = serde_json::from_str(&line).unwrap();
         let id = &req["id"];
-        let response =
-            format!("{{\"jsonrpc\":\"2.0\",\"result\":{{\"ok\":true}},\"id\":{id}}}\n");
+        let response = format!("{{\"jsonrpc\":\"2.0\",\"result\":{{\"ok\":true}},\"id\":{id}}}\n");
         (&stream).write_all(response.as_bytes()).unwrap();
     });
 
@@ -385,9 +384,8 @@ fn health_liveness_skips_invalid_params_error() {
         reader.read_line(&mut line2).unwrap();
         let req2: serde_json::Value = serde_json::from_str(&line2).unwrap();
         let id2 = &req2["id"];
-        let response2 = format!(
-            "{{\"jsonrpc\":\"2.0\",\"result\":{{\"status\":\"healthy\"}},\"id\":{id2}}}\n"
-        );
+        let response2 =
+            format!("{{\"jsonrpc\":\"2.0\",\"result\":{{\"status\":\"healthy\"}},\"id\":{id2}}}\n");
         (&stream).write_all(response2.as_bytes()).unwrap();
     });
 

@@ -679,15 +679,14 @@ mod tests {
 
     fn content_with_trust_rewards() -> ContentBundle {
         let mut content = test_content();
-        content.npcs.get_mut("maren").unwrap().trust_rewards = vec![
-            crate::content::NpcTrustReward {
+        content.npcs.get_mut("maren").unwrap().trust_rewards =
+            vec![crate::content::NpcTrustReward {
                 threshold: 2,
                 description: "Maren opens a hidden drawer.".to_owned(),
                 grants_knowledge: vec!["drawer_secret".to_owned()],
                 grants_items: vec!["silver_key".to_owned()],
                 sets_flags: vec!["maren_trusts_you".to_owned()],
-            },
-        ];
+            }];
         content
     }
 

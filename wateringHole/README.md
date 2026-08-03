@@ -38,12 +38,13 @@ wateringHole/
 
 | Handoff | Direction | Summary |
 |---------|-----------|---------|
-| `ESOTERICWEBB_V26_IRONGATE_DEEP_DEBT_AUG03_2026.md` | Outbound | V23–V26 deep debt on ironGate, 8/9 live, patterns for upstream |
+| `ESOTERICWEBB_V29_PETALTONGUE_INTEGRATION_AUG03_2026.md` | Outbound | V29 petalTongue grammar/animation, WebGL frontend, live site, refactors |
 
 ## Archived handoffs (fossil record)
 
 | Handoff | Direction | Summary |
 |---------|-----------|---------|
+| `ESOTERICWEBB_V26_IRONGATE_DEEP_DEBT_AUG03_2026.md` | Outbound | V23–V26 deep debt on ironGate, 8/9 live, patterns for upstream |
 | `ESOTERICWEBB_WAVE150O_RESTART_AAR_JUL20_2026.md` | Outbound | Service restart, scorecard corrections (0 prod unwraps, 0 >800L) |
 | `ESOTERICWEBB_V22_SCENE_BINDING_AAR_JUL18_2026.md` | Outbound | V22 scene graph binding fix, `game_scene` format, fallback to `ui.render` |
 | `ESOTERICWEBB_V21_LIVE_VISUAL_AAR_JUL18_2026.md` | Outbound | V21 live visual system, petalTongue `ui.render` composition, HTML frontend |

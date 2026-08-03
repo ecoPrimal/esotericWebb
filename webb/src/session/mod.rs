@@ -13,6 +13,7 @@
 //! - This module: `GameSession` struct, core methods, and tests
 
 mod enrichment;
+mod scene_builder;
 pub mod types;
 
 pub use types::{

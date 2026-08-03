@@ -2,31 +2,31 @@
 
 | | |
 |---|---|
-| **Version** | V26 |
-| **Tests** | 455 |
-| **Rust files** | 58 (~17k LOC) |
+| **Version** | V29 |
+| **Tests** | 477 |
+| **Rust files** | 64 (~18.7k LOC) |
 | **Experiments** | 6 (exp001–exp006) |
 | **MSRV** | 1.87 (edition 2024) |
 | **License** | AGPL-3.0 + ORC + CC-BY-SA 4.0 |
 | **Unsafe** | `#![forbid(unsafe_code)]` (workspace-level) |
 | **C deps** | Zero — all pure Rust (noyalib replaced C libyaml) |
 | **Prod unwraps** | 0 |
-| **Files >800L** | 0 (max: director/mod.rs 751L) |
+| **Files >800L** | 0 (max: director/mod.rs 750L) |
 | **Bridge methods** | 33 (all domains, all degrading, composition-first) |
 | **Capabilities exposed** | 27 (sourDough + lifecycle + narrative + session + introspection + MCP) |
 | **Primals consumed** | 9 domains (ai, viz, dag, lineage, compute, storage, provenance, crypto, mesh) |
 | **Live primals (ironGate)** | 8/9 healthy (zero-config discovery) |
 | **Transports** | NDJSON/TCP, UDS, UDS+BTSP, HTTP POST (`/jsonrpc`), REST health |
-| **Frontend** | `webb.primals.eco` — self-contained HTML, zero external deps |
-| **Scene push** | `visualization.render.scene` (game_scene) with `ui.render` fallback |
+| **Frontend** | `webb.primals.eco` — WebGL scene canvas + SSE streaming, zero external deps |
+| **Scene push** | `visualization.render.scene` + grammar-of-graphics + animation pipeline |
 | **Discovery** | 5-tier: biomeOS XDG, `/run/membrane`, env override, TCP well-known, HTTP REST |
 | **Cell graph** | `graphs/esotericwebb_cell.toml` — biomeOS composition topology |
-| **Last validation** | 2026-08-03 (V26, ironGate NUCLEUS) |
+| **Last validation** | 2026-08-03 (V29, ironGate NUCLEUS) |
 
 **A [sporeGarden](https://github.com/sporeGarden) project — the primals as a composed CRPG.**
 
-**Live**: `webb.primals.eco` (flockGate:8090, subdomain standard Wave 150d)  
-**First boot target**: ironGate NUCLEUS (8/9 primals, systemd user unit)
+**Live**: `webb.primals.eco` (ironGate:8090 via golgi reverse proxy, WireGuard mesh)  
+**Deployed**: ironGate NUCLEUS (8/9 primals, systemd user unit, `esotericwebb.service`)
 
 Esoteric Webb is not a spring. It is a standalone cross-evolution substrate
 that composes deployed primals (genomeBins/ecoBins from `plasmidBin/`) into
@@ -62,10 +62,10 @@ engine**. It consumes primals via JSON-RPC IPC — zero Rust crate dependencies
 on any spring. Primals are resolved from `plasmidBin/` or discovered via
 Songbird at runtime.
 
-| Domain | Primal | Role | Status (V26, ironGate) | Key IPC methods |
+| Domain | Primal | Role | Status (V29, ironGate) | Key IPC methods |
 |--------|--------|------|-------------|-----------------|
-| ai | Squirrel | AI narration, NPC dialogue, inference | **Live** (UDS) | `ai.query`, `ai.suggest`, `signal.plan` |
-| visualization | petalTongue | Scene rendering, input polling | **Live** (REST+UDS) | `visualization.render.scene`, `ui.render`, `interaction.poll` |
+| ai | Squirrel | AI narration, NPC dialogue, signal planning | **Live** (UDS) | `ai.query`, `ai.suggest`, `signal.plan`, `signal.dispatch` |
+| visualization | petalTongue | Scene rendering, grammar-of-graphics | **Live** (REST+UDS) | `visualization.render.scene`, `visualization.render.grammar`, `interaction.poll` |
 | dag | rhizoCrypt | Provenance DAG lifecycle | **Live** (UDS) | `dag.session.create`, `dag.event.append`, `dag.merkle.root` |
 | lineage | loamSpine | NPC personality certs | **Live** (UDS) | `certificate.mint` |
 | compute | toadStool | GPU compute dispatch | Offline (misconfigured unit) | `compute.dispatch.submit` |
@@ -123,22 +123,24 @@ to the creative DNA of teams like ZA/UM (Disco Elysium) and Cliche Studio
 webb/              Main Rust crate (narrative engine + IPC + director + bridge)
   src/bin/         CLI binary (serve, validate, preview, graph, new-world)
   src/ipc/         JSON-RPC client, bridge, discovery, launcher, resilience
+  src/ipc/bridge/  Primal bridge (domains.rs, resilience, tests.rs)
   src/narrative/   Graph, validator, predicate, effect, visualization
   src/director/    Game director (outcome evaluation, DDA integration)
-  src/content/     YAML content loader, ability/NPC/scene models (tests in tests.rs)
-  src/session/     Game session, enrichment pipeline, types (tests in tests.rs)
+  src/content/     YAML content loader, ability/NPC/scene models
+  src/session/     Game session, enrichment pipeline, scene_builder, types
   src/science/     Local game science (flow, engagement, DDA, voice interjections)
-  src/niche.rs     Self-knowledge (identity, 26 capabilities, socket resolution)
+  src/niche.rs     Self-knowledge (identity, 27 capabilities, socket resolution)
   src/state/       World state (knowledge, trust, inventory, flags, conditions)
-  capability_registry.toml   All 25 exposed JSON-RPC methods
+  static/          Frontend HTML (WebGL canvas, SSE, zero external deps)
+  capability_registry.toml   All 27 exposed JSON-RPC methods
 content/           YAML game content (authored by creative teams)
 experiments/       6 standalone validation crates (exp001–exp006)
-graphs/            biomeOS deploy graphs (8 TOML compositions, secure_by_default)
+graphs/            biomeOS deploy graphs (8 TOML compositions + cell graph)
 niches/            BYOB niche definition (esoteric-webb.yaml)
-deploy/            Composition fragment for biomeOS/primalSpring
+deploy/            Systemd units + launcher scripts for ironGate
 specs/             Design specifications (7 documents)
-wateringHole/      Handoffs to primal and spring teams
-whitePaper/        baseCamp evolution patterns document
+docs/              Runtime docs (degradation, Godot modality design)
+wateringHole/      Handoffs to primal and spring teams (fossil record)
 ```
 
 ## gen4 — The First Consumer

@@ -2,6 +2,68 @@
 
 All notable changes to Esoteric Webb are documented here.
 
+## V29 — Deep Debt Refactor (Aug 3, 2026)
+
+- **Smart refactoring**: Extracted `session/scene_builder.rs` (224L) from
+  enrichment pipeline. Extracted `ipc/bridge/tests.rs` (309L) from bridge.
+  All files now under 800L.
+- **Final audit**: Zero unsafe, zero unwraps, zero TODOs in production.
+  477 tests, 0 clippy warnings, `cargo fmt` clean.
+- **Root docs updated**: README bumped to V29, wateringHole handoff filed.
+
+## V28 — petalTongue Integration Evolution (Aug 3, 2026)
+
+### Phase 0: Live site
+
+- `webb.primals.eco` deployed via golgi Caddy reverse proxy to ironGate:8090.
+- `esotericwebb.service` binds `0.0.0.0:8090` for WireGuard accessibility.
+- UFW rule allows WireGuard subnet traffic.
+
+### Phase 1: Grammar of graphics
+
+- `visualization.render.grammar` bridge method sends `GrammarExpr` to petalTongue.
+- NPC trust levels and knowledge map visualizations generated per turn.
+
+### Phase 2: Rich scene primitives
+
+- `build_game_scene_graph` emits typed `SceneNode` payloads (Rect, Text, Point).
+- Proper transforms, opacity, visibility, stroke, fill semantics.
+
+### Phase 3: WebGL browser rendering
+
+- SSE endpoint `/api/scene/stream` streams scene updates to browser.
+- `index.html` WebGL canvas with 2D fallback. Zero external JS dependencies.
+
+### Phase 4: Live GPU mode (blocked upstream)
+
+- `petaltongue-live.service` systemd unit created.
+- Blocked by `winit` X11 library linkage issue in petalTongue binary.
+
+### Phase 5: Animation pipeline
+
+- Scene transition animations (fade-in background/title/description).
+- Staggered NPC entrance effects (translate + opacity ramp).
+
+### Phase 6: Godot bridge (design only)
+
+- `docs/GODOT_MODALITY_DESIGN.md` — static `.tscn` vs live GDExtension feed.
+
+## V23–V27 — ironGate Deep Debt (Aug 2–3, 2026)
+
+- **noyalib migration**: Replaced `serde_yaml` (C libyaml) with pure-Rust noyalib.
+- **Typed RulesetCert**: `RulesetCert`, `RuleEntry`, `RuleModifier` replace
+  opaque `serde_json::Value`. YAML 1.2 compliant content authoring.
+- **NPC trust_rewards evolved**: `BTreeMap<i32, _>` → `Vec<NpcTrustReward>`
+  with explicit `threshold` field for YAML 1.2 compatibility.
+- **BTSP transport**: UDS connections prefixed with `0xEC 0x01` for sweetGrass.
+- **REST health probing**: Auto-discovers petalTongue via `/health` endpoint.
+- **Chunked transfer encoding**: HTTP response parser handles chunked bodies.
+- **TCP well-known ports**: Discovers nestGate on TCP :8080.
+- **`/run/membrane` discovery**: Finds membrane-managed sockets.
+- **`signal.plan` / `signal.dispatch`**: Squirrel multi-step planning wired.
+- **Cell graph**: `esotericwebb_cell.toml` for biomeOS composition topology.
+- **471→477 tests**, zero clippy warnings throughout.
+
 ## V22 — Scene Graph Binding Fix (Jul 18, 2026)
 
 ### P1: `ui.render` → `visualization.render.scene` with fallback

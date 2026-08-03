@@ -199,10 +199,7 @@ impl RulesetCert {
     pub fn validate(&self) -> Vec<String> {
         let mut issues = Vec::new();
         if self.rules.is_empty() {
-            issues.push(format!(
-                "ruleset '{}': no rules defined",
-                self.plane
-            ));
+            issues.push(format!("ruleset '{}': no rules defined", self.plane));
         }
         for (i, rule) in self.rules.iter().enumerate() {
             if rule.id.is_empty() {

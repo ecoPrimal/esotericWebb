@@ -2,9 +2,9 @@
 //! Tests for capability-based primal discovery.
 
 use super::*;
-use crate::ipc::discovery_paths::{plasmid_bin_directories, process_uid, socket_directories};
 #[cfg(unix)]
 use crate::ipc::discovery_paths::uid_from_proc_status;
+use crate::ipc::discovery_paths::{plasmid_bin_directories, process_uid, socket_directories};
 
 #[test]
 fn socket_directories_include_run_user_biomeos() {

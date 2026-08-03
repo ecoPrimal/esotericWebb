@@ -10,6 +10,8 @@ use serde::{Deserialize, Serialize};
 
 /// Visualization primal method names.
 pub const METHOD_RENDER_SCENE: &str = "visualization.render.scene";
+/// Grammar of graphics — declarative visualization compilation.
+pub const METHOD_RENDER_GRAMMAR: &str = "visualization.render.grammar";
 /// Generic UI render — accepts `{type, content}` and renders immediately.
 pub const METHOD_UI_RENDER: &str = "ui.render";
 /// Subscribe to input events.

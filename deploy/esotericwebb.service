@@ -12,7 +12,8 @@
 #
 # The service:
 #   - Discovers 8/9 primals from NUCLEUS membrane (BTSP, UDS, TCP, HTTP)
-#   - Listens on TCP 127.0.0.1:8090 (IPC) and UDS (biomeOS composition)
+#   - Listens on TCP 0.0.0.0:8090 (IPC + web frontend, reachable via WireGuard)
+#   - Listens on UDS (biomeOS composition)
 #   - Announces itself to biomeOS neural-api on startup
 #   - Gracefully degrades when optional primals (toadStool) are absent
 
@@ -23,7 +24,7 @@ Wants=membrane-nucleus@squirrel.service membrane-nucleus@petaltongue.service
 
 [Service]
 Type=simple
-ExecStart=%h/Development/ecoPrimals/gardens/esotericWebb/target/release/esotericwebb serve --content %h/Development/ecoPrimals/gardens/esotericWebb/content --port 8090
+ExecStart=%h/Development/ecoPrimals/gardens/esotericWebb/target/release/esotericwebb serve --content %h/Development/ecoPrimals/gardens/esotericWebb/content --listen 0.0.0.0:8090
 Restart=on-failure
 RestartSec=5
 Environment=RUST_LOG=info

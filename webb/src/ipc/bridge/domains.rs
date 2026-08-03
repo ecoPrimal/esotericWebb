@@ -23,7 +23,8 @@
 
 use crate::ipc::envelope::IpcError;
 use crate::ipc::petaltongue::{
-    InputEvent, METHOD_INTERACTION_POLL, METHOD_RENDER_SCENE, METHOD_UI_RENDER,
+    InputEvent, METHOD_INTERACTION_POLL, METHOD_RENDER_GRAMMAR, METHOD_RENDER_SCENE,
+    METHOD_UI_RENDER,
 };
 use crate::ipc::primal_names::domain;
 use crate::ipc::squirrel::{
@@ -235,6 +236,35 @@ impl PrimalBridge {
         }
         let _ = self.resilient_call(domain::VISUALIZATION, METHOD_RENDER_SCENE, scene.clone())?;
         Ok(())
+    }
+
+    /// Push a grammar-of-graphics expression for compilation and rendering.
+    ///
+    /// petalTongue compiles the `GrammarExpr` + inline data into a scene graph
+    /// and renders it in the requested modality (svg, webgl, terminal).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`IpcError`] if the visualization domain is absent or rejects the grammar.
+    pub fn render_grammar(
+        &mut self,
+        grammar: &serde_json::Value,
+        data: &[serde_json::Value],
+        modality: &str,
+    ) -> Result<serde_json::Value, IpcError> {
+        if !self.has(domain::VISUALIZATION) {
+            return Err(IpcError::PrimalNotFound {
+                domain: domain::VISUALIZATION.to_owned(),
+            });
+        }
+        let params = serde_json::json!({
+            "session_id": "esotericwebb-grammar",
+            "grammar": grammar,
+            "data": data,
+            "modality": modality,
+        });
+        let resp = self.resilient_call(domain::VISUALIZATION, METHOD_RENDER_GRAMMAR, params)?;
+        Ok(resp.result.unwrap_or(serde_json::Value::Null))
     }
 
     /// Render content via petalTongue's `ui.render` — simpler than the full

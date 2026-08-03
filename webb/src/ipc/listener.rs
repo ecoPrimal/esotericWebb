@@ -200,6 +200,11 @@ fn handle_http_request(
     if is_get {
         let path = request_line.split_whitespace().nth(1).unwrap_or("/");
 
+        if path == "/api/scene/stream" {
+            handle_scene_sse(writer, session);
+            return;
+        }
+
         let response_body = if path == "/api/status" {
             build_status_response(session)
         } else {
@@ -313,6 +318,61 @@ fn build_status_response(session: &SharedSession) -> String {
         "docs": "POST a JSON-RPC request to this URL. Methods: health.liveness, session.state, session.act, session.actions",
     });
     serde_json::to_string_pretty(&status).unwrap_or_else(|_| r#"{"status":"healthy"}"#.to_owned())
+}
+
+/// SSE endpoint: sends scene graph snapshots as `event: scene` messages.
+///
+/// The client receives the current scene on connect, then polls every 500ms
+/// for state changes (turn number bump). Connection is kept alive until the
+/// client disconnects or the game ends.
+fn handle_scene_sse(mut writer: &std::net::TcpStream, session: &SharedSession) {
+    let _ = write!(
+        writer,
+        "HTTP/1.1 200 OK\r\n\
+         Content-Type: text/event-stream\r\n\
+         Cache-Control: no-cache\r\n\
+         Connection: keep-alive\r\n\
+         Access-Control-Allow-Origin: *\r\n\
+         \r\n"
+    );
+    let _ = writer.flush();
+
+    let mut last_turn: u32 = 0;
+    loop {
+        let scene_json = {
+            let guard = session
+                .lock()
+                .unwrap_or_else(std::sync::PoisonError::into_inner);
+            guard.as_ref().map(|sess| {
+                let snap = sess.snapshot();
+                let turn = snap.turn;
+                let scene = serde_json::json!({
+                    "turn": turn,
+                    "node": snap.current_node,
+                    "is_ending": snap.is_ending,
+                    "trust": snap.trust,
+                    "knowledge": snap.knowledge,
+                    "scene_description": snap.scene_description,
+                });
+                (turn, scene)
+            })
+        };
+
+        if let Some((turn, scene)) = scene_json {
+            if turn != last_turn || last_turn == 0 {
+                last_turn = turn;
+                let data = serde_json::to_string(&scene).unwrap_or_default();
+                if write!(writer, "event: scene\ndata: {data}\n\n").is_err() {
+                    break;
+                }
+                if writer.flush().is_err() {
+                    break;
+                }
+            }
+        }
+
+        std::thread::sleep(std::time::Duration::from_millis(500));
+    }
 }
 
 fn handle_jsonrpc_line(line: &str, mut writer: &std::net::TcpStream, session: &SharedSession) {

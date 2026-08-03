@@ -38,9 +38,28 @@ header .status.disconnected { color: var(--red); }
 main {
   flex: 1;
   display: grid;
-  grid-template-columns: 1fr 300px;
+  grid-template-columns: 1fr 1fr 300px;
   gap: 0;
   overflow: hidden;
+}
+#scene-panel {
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+#scene-panel h2 {
+  padding: 0.8rem 1rem;
+  font-size: 0.85rem;
+  color: var(--dim);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border-bottom: 1px solid var(--border);
+}
+#scene-canvas {
+  flex: 1;
+  width: 100%;
+  image-rendering: auto;
 }
 #narrative {
   padding: 2rem;
@@ -95,6 +114,10 @@ main {
   <span id="conn-status" class="status">connecting...</span>
 </header>
 <main>
+  <div id="scene-panel">
+    <h2>Scene</h2>
+    <canvas id="scene-canvas" width="800" height="600"></canvas>
+  </div>
   <div id="narrative"><div class="loading">Loading session...</div></div>
   <div id="sidebar">
     <h2>Session</h2>
@@ -208,6 +231,160 @@ async function init() {
 }
 
 init();
+
+// Scene rendering via WebGL canvas + SSE stream
+const canvas = document.getElementById('scene-canvas');
+const gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
+let ctx2d = null;
+if (!gl) {
+  ctx2d = canvas.getContext('2d');
+}
+
+function renderScene(data) {
+  if (!data) return;
+  const W = canvas.width, H = canvas.height;
+
+  if (gl) {
+    renderSceneWebGL(gl, data, W, H);
+  } else if (ctx2d) {
+    renderScene2D(ctx2d, data, W, H);
+  }
+}
+
+function renderSceneWebGL(gl, data, W, H) {
+  gl.viewport(0, 0, W, H);
+  const bg = data.is_ending ? [0.15, 0.08, 0.08, 1.0] : [0.06, 0.07, 0.09, 1.0];
+  gl.clearColor(...bg);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+
+  // Overlay 2D text via a composited canvas since WebGL can't do text natively
+  if (!ctx2d) {
+    const overlay = document.createElement('canvas');
+    overlay.width = W; overlay.height = H;
+    ctx2d = overlay.getContext('2d');
+  }
+  ctx2d.clearRect(0, 0, W, H);
+  drawSceneOverlay(ctx2d, data, W, H);
+
+  // Blit overlay text into WebGL as texture
+  const tex = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, tex);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, ctx2d.canvas);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+
+  gl.enable(gl.BLEND);
+  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
+  // Simple fullscreen quad for text overlay
+  drawFullscreenQuad(gl, tex, W, H);
+  gl.deleteTexture(tex);
+}
+
+let quadProgram = null;
+function drawFullscreenQuad(gl, tex, W, H) {
+  if (!quadProgram) {
+    const vs = gl.createShader(gl.VERTEX_SHADER);
+    gl.shaderSource(vs, `attribute vec2 p;varying vec2 uv;void main(){uv=p*0.5+0.5;uv.y=1.0-uv.y;gl_Position=vec4(p,0,1);}`);
+    gl.compileShader(vs);
+    const fs = gl.createShader(gl.FRAGMENT_SHADER);
+    gl.shaderSource(fs, `precision mediump float;varying vec2 uv;uniform sampler2D t;void main(){gl_FragColor=texture2D(t,uv);}`);
+    gl.compileShader(fs);
+    quadProgram = gl.createProgram();
+    gl.attachShader(quadProgram, vs);
+    gl.attachShader(quadProgram, fs);
+    gl.linkProgram(quadProgram);
+  }
+  gl.useProgram(quadProgram);
+  const buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,1,-1,-1,1,1,1]), gl.STATIC_DRAW);
+  const loc = gl.getAttribLocation(quadProgram, 'p');
+  gl.enableVertexAttribArray(loc);
+  gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+  gl.activeTexture(gl.TEXTURE0);
+  gl.bindTexture(gl.TEXTURE_2D, tex);
+  gl.uniform1i(gl.getUniformLocation(quadProgram, 't'), 0);
+  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  gl.deleteBuffer(buf);
+}
+
+function renderScene2D(ctx, data, W, H) {
+  const bg = data.is_ending ? '#261414' : '#0f1217';
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+  drawSceneOverlay(ctx, data, W, H);
+}
+
+function drawSceneOverlay(ctx, data, W, H) {
+  ctx.font = 'bold 20px JetBrains Mono, monospace';
+  ctx.fillStyle = '#e0e8f0';
+  ctx.fillText(data.node || 'Unknown', 20, 35);
+
+  ctx.font = '14px JetBrains Mono, monospace';
+  ctx.fillStyle = '#8ba5d4';
+  ctx.fillText(`Turn ${data.turn || 0}`, W - 90, 25);
+
+  ctx.font = '12px JetBrains Mono, monospace';
+  ctx.fillStyle = '#bcc3cc';
+  const desc = (data.scene_description || '').slice(0, 120);
+  ctx.fillText(desc, 20, 65);
+
+  // NPC trust circles
+  const trust = data.trust || {};
+  const npcs = Object.keys(trust);
+  npcs.forEach((npc, i) => {
+    const x = 100 + i * 140;
+    const y = H * 0.65;
+    const level = trust[npc] || 0;
+    const hue = (i * 0.3 % 1.0) * 360;
+    const radius = 22 + Math.abs(level) * 3;
+
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    ctx.fillStyle = `hsla(${hue}, 55%, 55%, 0.8)`;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(230, 230, 230, 0.7)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.font = '11px JetBrains Mono, monospace';
+    ctx.fillStyle = '#d9dce0';
+    ctx.textAlign = 'center';
+    ctx.fillText(npc, x, y + radius + 16);
+    ctx.fillStyle = '#7eaadd';
+    ctx.fillText(`trust: ${level}`, x, y + radius + 30);
+    ctx.textAlign = 'left';
+  });
+
+  // Knowledge markers
+  const knowledge = data.knowledge || [];
+  if (knowledge.length > 0) {
+    ctx.font = '10px JetBrains Mono, monospace';
+    ctx.fillStyle = '#6eaa6e';
+    ctx.fillText(`Knowledge (${knowledge.length}):`, 20, H - 60);
+    knowledge.slice(0, 6).forEach((k, i) => {
+      ctx.fillStyle = '#90c090';
+      ctx.fillText(`• ${k.slice(0, 50)}`, 30, H - 44 + i * 14);
+    });
+  }
+}
+
+// SSE scene stream
+let sceneSource = null;
+function connectSceneStream() {
+  if (sceneSource) sceneSource.close();
+  sceneSource = new EventSource(API + '/api/scene/stream');
+  sceneSource.addEventListener('scene', (ev) => {
+    try {
+      const data = JSON.parse(ev.data);
+      renderScene(data);
+    } catch {}
+  });
+  sceneSource.onerror = () => {
+    setTimeout(connectSceneStream, 3000);
+  };
+}
+connectSceneStream();
 </script>
 </body>
 </html>

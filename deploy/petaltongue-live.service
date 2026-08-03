@@ -1,0 +1,32 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+# petalTongue LIVE mode — GPU-accelerated native rendering for esotericWebb.
+#
+# Runs petalTongue in `live` mode (egui + wgpu) with IPC socket, using the
+# RTX 5070 for real-time scene rendering. Requires X11/Wayland display.
+#
+# Install:
+#   cp deploy/petaltongue-live.service ~/.config/systemd/user/
+#   systemctl --user daemon-reload
+#   systemctl --user enable --now petaltongue-live.service
+#
+# Note: This runs alongside the `web` mode instance (port 3001). The live
+# mode uses a separate UDS socket for esotericWebb scene pushes.
+
+[Unit]
+Description=petalTongue LIVE — GPU rendering (esotericWebb)
+After=esotericwebb.service
+Wants=esotericwebb.service
+ConditionEnvironment=DISPLAY
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/petaltongue live --socket %t/biomeos/petaltongue-live.sock --port 3002 --bind 127.0.0.1
+Restart=on-failure
+RestartSec=5
+Environment=DISPLAY=:0
+Environment=RUST_LOG=info
+Environment=XDG_RUNTIME_DIR=/run/user/%U
+
+[Install]
+WantedBy=default.target

@@ -270,6 +270,7 @@ impl GameSession {
 
         let mut enrichment = self.enrich_action(kind, id, &outcome_text);
         enrichment.scene_pushed = self.push_scene_to_ui();
+        self.push_grammar_visualizations();
         self.record_provenance_vertex(&action_desc, &node_after);
         self.complete_provenance_if_ended();
 

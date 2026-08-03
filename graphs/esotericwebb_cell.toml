@@ -1,0 +1,173 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+# esotericWebb Cell — First Live Cell Boot on ironGate
+#
+# This is the biomeOS cell composition graph for deploying esotericWebb as a
+# live cell on ironGate. Unlike webb_full.toml (which spawns primals from
+# plasmidBin), this graph assumes all primals are ALREADY RUNNING via
+# ironGate's membrane-nucleus systemd units.
+#
+# The cell graph tells biomeOS:
+#   1. What capabilities this cell requires
+#   2. In what order to validate them (health gates)
+#   3. Where esotericWebb sits in the composition topology
+#   4. How to declare the cell LIVE vs DEGRADED
+#
+# Usage:
+#   biomeos deploy --graph graphs/esotericwebb_cell.toml --mode attach
+#
+# Gate:    ironGate (NUCLEUS 13/13)
+# Target:  First live cell composition boot in the ecosystem
+# Wave:    155p
+
+[cell]
+id = "esotericwebb"
+name = "Esoteric Webb CRPG"
+description = "Cross-evolution narrative CRPG — first live cell on ironGate"
+version = "1.0.0"
+gate = "ironGate"
+mode = "attach"
+
+[cell.metadata]
+owner = "esotericwebb"
+domain = "narrative"
+wave = 155
+created = "2026-08-03"
+license = "AGPL-3.0-or-later"
+
+[cell.health]
+method = "webb.liveness"
+interval_ms = 30000
+timeout_ms = 5000
+
+# ── Required capabilities (cell cannot boot without these) ──────────────
+
+[[cell.requires]]
+domain = "crypto"
+primal = "beardog"
+methods = ["crypto.sign_ed25519", "crypto.verify_ed25519", "crypto.blake3_hash"]
+health = "health.liveness"
+critical = true
+
+[[cell.requires]]
+domain = "mesh"
+primal = "songbird"
+methods = ["discovery.register", "discovery.query", "ipc.resolve"]
+health = "health.liveness"
+critical = true
+
+[[cell.requires]]
+domain = "ai"
+primal = "squirrel"
+methods = ["ai.query", "ai.suggest", "ai.analyze", "signal.plan"]
+health = "health.liveness"
+critical = false
+
+# ── Optional capabilities (cell degrades without these) ─────────────────
+
+[[cell.optional]]
+domain = "visualization"
+primal = "petaltongue"
+methods = ["visualization.render.scene", "ui.render", "interaction.poll"]
+health = "http://127.0.0.1:3001/health"
+degradation = "Text-mode narration only. No scene rendering."
+
+[[cell.optional]]
+domain = "storage"
+primal = "nestgate"
+methods = ["storage.store", "storage.retrieve"]
+health = "health.liveness"
+degradation = "No save/load. Session state is ephemeral."
+
+[[cell.optional]]
+domain = "dag"
+primal = "rhizocrypt"
+methods = ["dag.session.create", "dag.event.append", "dag.frontier.get"]
+health = "health.liveness"
+degradation = "No provenance tracking. Game plays but history is lost."
+
+[[cell.optional]]
+domain = "lineage"
+primal = "loamspine"
+methods = ["spine.create", "entry.append", "certificate.mint"]
+health = "health.liveness"
+degradation = "No NPC personality certificates."
+
+[[cell.optional]]
+domain = "provenance"
+primal = "sweetgrass"
+methods = ["braid.create", "braid.commit", "attribution.chain"]
+health = "health.liveness"
+degradation = "No content attribution. Playthrough not sealed."
+
+[[cell.optional]]
+domain = "compute"
+primal = "toadstool"
+methods = ["compute.dispatch.submit"]
+health = "health.liveness"
+degradation = "No GPU compute offload. CPU-only game science."
+
+# ── Cell endpoint ───────────────────────────────────────────────────────
+
+[cell.endpoint]
+binary = "esotericwebb"
+args = ["serve", "--content", "content/", "--port", "8090"]
+socket = "${XDG_RUNTIME_DIR}/biomeos/esotericwebb.sock"
+tcp = "127.0.0.1:8090"
+capabilities = [
+    "health.liveness",
+    "health.readiness",
+    "health.check",
+    "health.version",
+    "identity.get",
+    "capabilities.list",
+    "primal.announce",
+    "webb.health",
+    "webb.liveness",
+    "webb.readiness",
+    "webb.scene.current",
+    "webb.narrative.status",
+    "webb.content.list",
+    "session.start",
+    "session.state",
+    "session.actions",
+    "session.act",
+    "session.history",
+    "session.narrate",
+    "session.graph",
+    "tools.list",
+    "tools.call",
+]
+
+# ── Liveness gates (validation sequence) ───────────────────────────────
+
+[[cell.gates]]
+id = "tower_healthy"
+description = "Tower Atomic: crypto + discovery"
+requires = ["crypto", "mesh"]
+timeout_ms = 10000
+
+[[cell.gates]]
+id = "ai_ready"
+description = "AI primal responsive"
+requires = ["ai"]
+depends_on = ["tower_healthy"]
+timeout_ms = 15000
+
+[[cell.gates]]
+id = "cell_live"
+description = "esotericWebb cell responding to webb.liveness"
+requires = []
+depends_on = ["tower_healthy"]
+timeout_ms = 20000
+health_check = "webb.liveness"
+target = "esotericwebb"
+
+# ── Composition declaration ────────────────────────────────────────────
+
+[cell.composition]
+tier = "nest"
+atomic_base = "tower"
+overlays = ["ai", "visualization", "provenance"]
+mesh_required = false
+data_gates = []

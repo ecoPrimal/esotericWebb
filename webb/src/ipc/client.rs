@@ -115,6 +115,33 @@ impl PrimalClient {
         })
     }
 
+    /// Connect to a primal via UDS with BTSP (riboCipher) transport signal.
+    ///
+    /// Sends the 2-byte prefix `[0xEC, 0x01]` immediately after connecting,
+    /// signaling "JSON-RPC 2.0 NDJSON" protocol. Required by primals like
+    /// sweetGrass that enforce `RIBOCIPHER_TRANSPORT_SIGNAL_STANDARD`.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`IpcError::ConnectionRefused`] if the socket is unreachable.
+    pub fn connect_btsp(socket: &Path, primal: &str) -> Result<Self, IpcError> {
+        let mut stream = UnixStream::connect(socket).map_err(|e| classify_io_error(&e))?;
+        let timeout = default_timeout();
+        stream
+            .set_read_timeout(Some(timeout))
+            .map_err(|e| classify_io_error(&e))?;
+        stream
+            .set_write_timeout(Some(timeout))
+            .map_err(|e| classify_io_error(&e))?;
+        stream
+            .write_all(&[0xEC, 0x01])
+            .map_err(|e| classify_io_error(&e))?;
+        Ok(Self {
+            transport: Transport::Uds(BufReader::new(stream)),
+            primal: primal.to_owned(),
+        })
+    }
+
     /// Connect to a primal via TCP (host:port).
     ///
     /// # Errors

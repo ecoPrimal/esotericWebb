@@ -23,6 +23,9 @@ pub(super) fn socket_directories() -> Vec<PathBuf> {
     dirs.push(PathBuf::from(format!("/run/user/{uid}/biomeos")));
     dirs.push(PathBuf::from(format!("/tmp/biomeos-{uid}")));
 
+    // Tier 5: system membrane sockets (root-managed primals with relaxed perms)
+    dirs.push(PathBuf::from("/run/membrane"));
+
     dirs
 }
 

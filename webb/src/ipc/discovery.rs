@@ -11,13 +11,14 @@
 //!
 //! Discovery strategy:
 //!
-//! **UDS** (4-tier implemented, per wateringHole `UNIVERSAL_IPC_STANDARD_V3`):
+//! **UDS** (5-tier implemented, per wateringHole `UNIVERSAL_IPC_STANDARD_V3`):
 //! 1. `$BIOMEOS_SOCKET_DIR/<domain>.sock`
 //! 2. `$XDG_RUNTIME_DIR/biomeos/<domain>.sock`
 //! 3. `/run/user/<uid>/biomeos/<domain>.sock`
 //! 4. `/tmp/biomeos-<uid>/<domain>.sock`
+//! 5. `/run/membrane/<primal>.sock` (system membrane, needs accessible perms)
 //!
-//! Tier 5 (Songbird `discovery.query`) is planned but not yet implemented
+//! Tier 6 (Songbird `discovery.query`) is planned but not yet implemented
 //! — see `EVOLUTION_GAPS.md` GAP-006.
 //!
 //! **TCP** (checked first, highest priority):
@@ -313,7 +314,9 @@ impl PrimalRegistry {
                     .by_domain
                     .entry(resolved_domain.clone())
                     .or_insert_with(|| PrimalEndpoint::empty(resolved_domain, resolved_name));
-                ep.socket_path = Some(path);
+                if ep.socket_path.is_none() {
+                    ep.socket_path = Some(path);
+                }
             }
         }
     }
@@ -353,7 +356,7 @@ impl PrimalRegistry {
 
         for entry in well_known {
             if let Some(ep) = self.by_domain.get(entry.domain) {
-                if ep.http_url.is_some() || ep.tcp_addr.is_some() || ep.socket_path.is_some() {
+                if ep.http_url.is_some() || ep.tcp_addr.is_some() {
                     continue;
                 }
             }
@@ -389,7 +392,7 @@ impl PrimalRegistry {
 
         for &(domain, name, ports) in WELL_KNOWN_TCP {
             if let Some(ep) = self.by_domain.get(domain) {
-                if ep.http_url.is_some() || ep.tcp_addr.is_some() || ep.socket_path.is_some() {
+                if ep.http_url.is_some() || ep.tcp_addr.is_some() {
                     continue;
                 }
             }

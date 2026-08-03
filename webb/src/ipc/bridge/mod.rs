@@ -111,6 +111,15 @@ impl PrimalBridge {
                                 healthy = true;
                                 transport_used = Some(format!("uds:{}", sock.display()));
                                 clients.insert(domain.to_owned(), client);
+                            } else if let Ok(mut btsp_client) =
+                                PrimalClient::connect_btsp(sock, name)
+                            {
+                                if btsp_client.health_liveness().unwrap_or(false) {
+                                    healthy = true;
+                                    transport_used =
+                                        Some(format!("uds+btsp:{}", sock.display()));
+                                    clients.insert(domain.to_owned(), btsp_client);
+                                }
                             }
                         }
                     }

@@ -49,6 +49,10 @@ enum Command {
         /// `UniBin` mandatory: `server --port <PORT>`.
         #[arg(long)]
         port: Option<u16>,
+        /// Cell graph TOML for biomeOS attach mode. Validates health gates
+        /// against live primals and reports LIVE/DEGRADED status at startup.
+        #[arg(long)]
+        cell: Option<String>,
     },
     /// Validate a content directory for correctness.
     Validate {
@@ -140,9 +144,16 @@ fn main() {
             graph,
             listen,
             port,
+            cell,
         } => {
             let listen_addr = listen.or_else(|| port.map(esoteric_webb::ipc::host_port));
-            commands::cmd_serve(&content, launch, &graph, listen_addr.as_deref())
+            commands::cmd_serve(
+                &content,
+                launch,
+                &graph,
+                listen_addr.as_deref(),
+                cell.as_deref(),
+            )
         }
         Command::Validate { content, all } => {
             if all {

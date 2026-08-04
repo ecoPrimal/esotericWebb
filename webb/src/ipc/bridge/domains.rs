@@ -33,10 +33,11 @@ use crate::ipc::squirrel::{
 };
 use crate::ipc::{
     METHOD_CERT_MINT, METHOD_COMPUTE_SUBMIT, METHOD_CRYPTO_HASH, METHOD_CRYPTO_SIGN,
-    METHOD_CRYPTO_VERIFY, METHOD_DAG_EVENT_APPEND, METHOD_DAG_FRONTIER_GET, METHOD_DAG_MERKLE_ROOT,
-    METHOD_DAG_QUERY_VERTICES, METHOD_DAG_SESSION_COMPLETE, METHOD_DAG_SESSION_CREATE,
-    METHOD_MESH_BONDS, METHOD_MESH_HEALTH, METHOD_MESH_QUERY, METHOD_MESH_TOPOLOGY,
-    METHOD_STORAGE_RETRIEVE, METHOD_STORAGE_STORE, SIGNAL_NEST_COMMIT, SIGNAL_NEST_STORE,
+    METHOD_CRYPTO_VERIFY, METHOD_DAG_EVENT_APPEND, METHOD_DAG_EVENT_BATCH, METHOD_DAG_FRONTIER_GET,
+    METHOD_DAG_MERKLE_ROOT, METHOD_DAG_QUERY_VERTICES, METHOD_DAG_SESSION_COMPLETE,
+    METHOD_DAG_SESSION_CREATE, METHOD_MESH_BONDS, METHOD_MESH_HEALTH, METHOD_MESH_QUERY,
+    METHOD_MESH_TOPOLOGY, METHOD_STORAGE_RETRIEVE, METHOD_STORAGE_STORE, SIGNAL_NEST_COMMIT,
+    SIGNAL_NEST_STORE,
 };
 
 use super::{PrimalBridge, degraded_summary_limit};
@@ -399,6 +400,43 @@ impl PrimalBridge {
             return Ok(Some("ok".to_owned()));
         }
         Ok(None)
+    }
+
+    /// Batch-append multiple events to a session DAG in one RPC call.
+    ///
+    /// Uses `dag.event.batch` (rhizoCrypt G31) for high-throughput provenance.
+    /// Falls back to sequential `dag.event.append` if batch is unavailable.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`IpcError`] if the call fails unexpectedly.
+    pub fn dag_event_batch(
+        &mut self,
+        events: &[serde_json::Value],
+    ) -> Result<Vec<Option<String>>, IpcError> {
+        if !self.has(domain::DAG) {
+            return Ok(vec![None; events.len()]);
+        }
+        let params = serde_json::json!({ "events": events });
+        match self.resilient_call(domain::DAG, METHOD_DAG_EVENT_BATCH, params) {
+            Ok(resp) => {
+                if let Some(result) = resp.result {
+                    if let Some(ids) = result.get("vertex_ids").and_then(|v| v.as_array()) {
+                        return Ok(ids.iter().map(|v| v.as_str().map(str::to_owned)).collect());
+                    }
+                }
+                Ok(vec![None; events.len()])
+            }
+            Err(e) if e.is_method_not_found() => {
+                tracing::debug!("dag.event.batch not available — falling back to sequential");
+                let mut results = Vec::with_capacity(events.len());
+                for event in events {
+                    results.push(self.dag_event_append(event)?);
+                }
+                Ok(results)
+            }
+            Err(e) => Err(e),
+        }
     }
 
     /// Get the current frontier of a session DAG.

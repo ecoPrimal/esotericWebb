@@ -22,6 +22,7 @@ pub fn cmd_serve(
     launch: bool,
     graph_path: &str,
     listen_addr: Option<&str>,
+    cell_path: Option<&str>,
 ) -> Result<()> {
     // Launcher owns child processes and kills them on Drop — must outlive the server.
     #[expect(
@@ -81,6 +82,10 @@ pub fn cmd_serve(
         }
     );
 
+    if let Some(cp) = cell_path {
+        validate_cell_graph(cp, &bridge)?;
+    }
+
     let sock = esoteric_webb::ipc::listener::socket_path();
     announce_to_biomeos(&mut bridge, &sock);
 
@@ -127,6 +132,41 @@ fn announce_to_biomeos(
         &sock.display().to_string(),
         esoteric_webb::niche::CAPABILITIES,
     );
+}
+
+/// Validate cell graph health gates against discovered primals.
+fn validate_cell_graph(
+    cell_path: &str,
+    bridge: &esoteric_webb::ipc::bridge::PrimalBridge,
+) -> Result<()> {
+    let path = std::path::Path::new(cell_path);
+    let graph = esoteric_webb::cell::load_cell_graph(path)?;
+    let status = esoteric_webb::cell::validate_cell(&graph, bridge);
+    println!();
+    println!(
+        "Cell [{id}] — {health}",
+        id = graph.cell.id,
+        health = status.health
+    );
+    for p in &status.required_passed {
+        println!("  [+] required: {p}");
+    }
+    for f in &status.required_failed {
+        println!("  [!] MISSING required: {f}");
+    }
+    for p in &status.optional_present {
+        println!("  [+] optional: {p}");
+    }
+    for d in &status.optional_absent {
+        println!("  [-] degraded {}: {}", d.domain, d.degradation);
+    }
+    println!();
+    if status.health == esoteric_webb::cell::CellHealth::Failed {
+        return Err(esoteric_webb::error::WebbError::Other(
+            "Cell boot FAILED — required primals unavailable".to_owned(),
+        ));
+    }
+    Ok(())
 }
 
 /// Validate a content directory for correctness.

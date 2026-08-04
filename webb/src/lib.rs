@@ -29,6 +29,7 @@
 //! narrative graphs) that the runtime loads, validates, and traverses.
 
 pub mod autoplay;
+pub mod cell;
 pub mod content;
 pub mod director;
 pub mod env_keys;

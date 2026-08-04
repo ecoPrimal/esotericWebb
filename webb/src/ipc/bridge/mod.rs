@@ -289,6 +289,12 @@ impl PrimalBridge {
         self.clients.contains_key(domain) || self.neural_api.is_some()
     }
 
+    /// Whether a specific domain has a direct client connection (not just Neural API).
+    #[must_use]
+    pub fn has_direct(&self, domain: &str) -> bool {
+        self.clients.contains_key(domain)
+    }
+
     /// Number of connected primals.
     #[must_use]
     pub fn connected_count(&self) -> usize {

@@ -307,3 +307,15 @@ fn standalone_signal_plan_returns_none() {
     let result = bridge.signal_plan("test prompt", &tools).unwrap();
     assert!(result.is_none());
 }
+
+#[test]
+fn standalone_dag_event_batch_returns_nones() {
+    let mut bridge = PrimalBridge::standalone();
+    let events = vec![
+        serde_json::json!({"session_id": "s1", "data": {"action": "look"}}),
+        serde_json::json!({"session_id": "s1", "data": {"action": "move"}}),
+    ];
+    let results = bridge.dag_event_batch(&events).unwrap();
+    assert_eq!(results.len(), 2);
+    assert!(results.iter().all(Option::is_none));
+}

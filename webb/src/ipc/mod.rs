@@ -86,6 +86,8 @@ pub const METHOD_STORAGE_RETRIEVE: &str = "storage.retrieve";
 pub const METHOD_DAG_SESSION_CREATE: &str = "dag.session.create";
 /// Append an event vertex to a session DAG.
 pub const METHOD_DAG_EVENT_APPEND: &str = "dag.event.append";
+/// Batch-append multiple event vertices in a single RPC (rhizoCrypt G31).
+pub const METHOD_DAG_EVENT_BATCH: &str = "dag.event.batch";
 /// Get the frontier of a session DAG.
 pub const METHOD_DAG_FRONTIER_GET: &str = "dag.frontier.get";
 /// Get the Merkle root of a session DAG.

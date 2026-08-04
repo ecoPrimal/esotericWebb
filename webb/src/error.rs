@@ -50,6 +50,15 @@ pub enum WebbError {
     #[error("signal: {0}")]
     Signal(String),
 
+    /// Configuration file error (TOML parse, missing field).
+    #[error("config ({path}): {detail}")]
+    Config {
+        /// Path to the configuration file.
+        path: String,
+        /// What went wrong.
+        detail: String,
+    },
+
     /// General operational error with context.
     #[error("{0}")]
     Other(String),

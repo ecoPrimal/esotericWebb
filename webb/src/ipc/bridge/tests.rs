@@ -212,6 +212,37 @@ fn standalone_announce_self_is_noop() {
 }
 
 #[test]
+fn standalone_cell_attach_degrades() {
+    let mut bridge = PrimalBridge::standalone();
+    let status = crate::cell::CellStatus {
+        health: crate::cell::CellHealth::Live,
+        required_passed: vec!["dag".to_owned()],
+        required_failed: vec![],
+        optional_present: vec![],
+        optional_absent: vec![],
+    };
+    let attached = bridge.cell_attach("test-cell", "Test Cell", "/tmp/test.sock", &status);
+    assert!(!attached, "standalone bridge cannot attach to biomeOS");
+}
+
+#[test]
+fn standalone_cell_health_report_degrades() {
+    let mut bridge = PrimalBridge::standalone();
+    let status = crate::cell::CellStatus {
+        health: crate::cell::CellHealth::Degraded,
+        required_passed: vec!["dag".to_owned()],
+        required_failed: vec![],
+        optional_present: vec![],
+        optional_absent: vec![crate::cell::DegradedCapability {
+            domain: "viz".to_owned(),
+            degradation: "No rendering".to_owned(),
+        }],
+    };
+    let reported = bridge.cell_health_report("test-cell", &status);
+    assert!(!reported, "standalone bridge cannot report health");
+}
+
+#[test]
 fn standalone_has_no_neural_api() {
     let bridge = PrimalBridge::standalone();
     assert!(!bridge.has_neural_api());

@@ -147,6 +147,13 @@ pub const METHOD_HEALTH_VERSION: &str = "health.version";
 /// Graceful shutdown acknowledgment.
 pub const METHOD_HEALTH_DRAIN: &str = "health.drain";
 
+// ── Cell management (Wave 155 — biomeOS cell attach) ────────
+
+/// Register as a managed cell with biomeOS composition layer.
+pub const METHOD_CELL_ATTACH: &str = "graph.cell.attach";
+/// Push cell health status update to biomeOS.
+pub const METHOD_CELL_HEALTH_REPORT: &str = "graph.cell.health";
+
 // ── Mesh routing (Wave 73 — cross-gate access) ──────────────
 
 /// Register capabilities with the mesh router for cross-gate discovery.

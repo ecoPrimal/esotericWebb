@@ -23,6 +23,7 @@ pub fn cmd_serve(
     graph_path: &str,
     listen_addr: Option<&str>,
     cell_path: Option<&str>,
+    mode: &str,
 ) -> Result<()> {
     // Launcher owns child processes and kills them on Drop — must outlive the server.
     #[expect(
@@ -82,12 +83,26 @@ pub fn cmd_serve(
         }
     );
 
-    if let Some(cp) = cell_path {
-        validate_cell_graph(cp, &bridge)?;
-    }
+    let attach_mode = mode == "attach";
+    let cell_id = if let Some(cp) = cell_path {
+        Some(validate_cell_graph(cp, &bridge)?)
+    } else {
+        if attach_mode {
+            return Err(WebbError::Other(
+                "--mode attach requires --cell <path> to specify the cell graph".to_owned(),
+            ));
+        }
+        None
+    };
 
     let sock = esoteric_webb::ipc::listener::socket_path();
     announce_to_biomeos(&mut bridge, &sock);
+
+    if attach_mode {
+        if let Some(ref id) = cell_id {
+            attach_cell(cell_path.unwrap_or_default(), id, &sock, &mut bridge);
+        }
+    }
 
     let session = esoteric_webb::session::GameSession::with_bridge(content_path, Some(bridge))?;
     let b = session.bundle();
@@ -138,7 +153,7 @@ fn announce_to_biomeos(
 fn validate_cell_graph(
     cell_path: &str,
     bridge: &esoteric_webb::ipc::bridge::PrimalBridge,
-) -> Result<()> {
+) -> Result<String> {
     let path = std::path::Path::new(cell_path);
     let graph = esoteric_webb::cell::load_cell_graph(path)?;
     let status = esoteric_webb::cell::validate_cell(&graph, bridge);
@@ -166,7 +181,33 @@ fn validate_cell_graph(
             "Cell boot FAILED — required primals unavailable".to_owned(),
         ));
     }
-    Ok(())
+    Ok(graph.cell.id)
+}
+
+/// Attach this process to biomeOS as a managed cell and start health heartbeat.
+fn attach_cell(
+    cell_path: &str,
+    cell_id: &str,
+    sock: &std::path::Path,
+    bridge: &mut esoteric_webb::ipc::bridge::PrimalBridge,
+) {
+    let path = std::path::Path::new(cell_path);
+    let graph = match esoteric_webb::cell::load_cell_graph(path) {
+        Ok(g) => g,
+        Err(e) => {
+            eprintln!("cell attach: failed to reload graph: {e}");
+            return;
+        }
+    };
+    let status = esoteric_webb::cell::validate_cell(&graph, bridge);
+    let sock_str = sock.display().to_string();
+
+    let attached = bridge.cell_attach(cell_id, &graph.cell.name, &sock_str, &status);
+    if attached {
+        println!("Cell '{cell_id}' attached to biomeOS — managed mode");
+    } else {
+        println!("Cell '{cell_id}' operating unmanaged (biomeOS cell.attach unavailable)");
+    }
 }
 
 /// Validate a content directory for correctness.

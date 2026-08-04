@@ -17,6 +17,7 @@
 //! Domain-specific delegations (AI, game, DAG, …) live in `domains`.
 
 mod domains;
+mod lifecycle;
 
 use std::collections::HashMap;
 

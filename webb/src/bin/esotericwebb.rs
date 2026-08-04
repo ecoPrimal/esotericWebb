@@ -53,6 +53,10 @@ enum Command {
         /// against live primals and reports LIVE/DEGRADED status at startup.
         #[arg(long)]
         cell: Option<String>,
+        /// Operating mode: `standalone` (default) or `attach` (register with biomeOS
+        /// as a managed cell, push periodic health updates).
+        #[arg(long, default_value = "standalone")]
+        mode: String,
     },
     /// Validate a content directory for correctness.
     Validate {
@@ -145,6 +149,7 @@ fn main() {
             listen,
             port,
             cell,
+            mode,
         } => {
             let listen_addr = listen.or_else(|| port.map(esoteric_webb::ipc::host_port));
             commands::cmd_serve(
@@ -153,6 +158,7 @@ fn main() {
                 &graph,
                 listen_addr.as_deref(),
                 cell.as_deref(),
+                &mode,
             )
         }
         Command::Validate { content, all } => {

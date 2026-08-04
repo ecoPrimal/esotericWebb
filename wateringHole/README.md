@@ -38,6 +38,7 @@ wateringHole/
 
 | Handoff | Direction | Summary |
 |---------|-----------|---------|
+| `ESOTERICWEBB_V31B_LIVE_CELL_BOOT_AAR_AUG04_2026.md` | Outbound | V31b live cell boot AAR — 8/9 primals, 28 caps, remaining issues for upstream |
 | `ESOTERICWEBB_V31_CELL_ATTACH_AUG04_2026.md` | Outbound | V31 cell attachment protocol, signed provenance, batch chunking, lifecycle extraction |
 
 ## Archived handoffs (fossil record)

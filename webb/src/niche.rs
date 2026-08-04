@@ -65,7 +65,7 @@ pub const CAPABILITIES: &[&str] = &[
 pub fn gate_id() -> String {
     use crate::env_keys;
     std::env::var(env_keys::BIOMEOS_GATE_ID)
-        .or_else(|_| std::env::var("HOSTNAME"))
+        .or_else(|_| std::env::var(env_keys::HOSTNAME))
         .unwrap_or_else(|_| "unknown-gate".to_owned())
 }
 

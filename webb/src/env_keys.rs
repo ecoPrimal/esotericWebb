@@ -28,6 +28,8 @@ pub const XDG_RUNTIME_DIR: &str = "XDG_RUNTIME_DIR";
 pub const USER: &str = "USER";
 /// Current user ID (numeric, for `/run/user/{uid}` paths).
 pub const UID: &str = "UID";
+/// Machine hostname (fallback for gate identity).
+pub const HOSTNAME: &str = "HOSTNAME";
 
 // ── Socket / discovery ──────────────────────────────────────────────────────
 

@@ -439,7 +439,7 @@ mod tests {
     fn socket_path_is_xdg_compliant() {
         let path = socket_path();
         let s = path.to_string_lossy();
-        assert!(s.contains("biomeos"));
+        assert!(s.contains(crate::niche::ECOSYSTEM_SOCKET_DIR));
         assert!(s.ends_with("esotericwebb.sock"));
     }
 
@@ -448,7 +448,8 @@ mod tests {
         let path = socket_path();
         let s = path.to_string_lossy();
         // XDG_RUNTIME_DIR is set: path starts there, else /tmp fallback.
-        let xdg = std::env::var("XDG_RUNTIME_DIR").unwrap_or_else(|_| "/tmp".to_owned());
+        let xdg = std::env::var(crate::env_keys::XDG_RUNTIME_DIR)
+            .unwrap_or_else(|_| "/tmp".to_owned());
         assert!(s.starts_with(&xdg));
     }
 

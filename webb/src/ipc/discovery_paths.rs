@@ -16,12 +16,13 @@ pub(super) fn socket_directories() -> Vec<PathBuf> {
     }
 
     if let Ok(xdg) = std::env::var(crate::env_keys::XDG_RUNTIME_DIR) {
-        dirs.push(PathBuf::from(xdg).join("biomeos"));
+        dirs.push(PathBuf::from(xdg).join(crate::niche::ECOSYSTEM_SOCKET_DIR));
     }
 
     let uid = process_uid();
-    dirs.push(PathBuf::from(format!("/run/user/{uid}/biomeos")));
-    dirs.push(PathBuf::from(format!("/tmp/biomeos-{uid}")));
+    let sock_dir = crate::niche::ECOSYSTEM_SOCKET_DIR;
+    dirs.push(PathBuf::from(format!("/run/user/{uid}/{sock_dir}")));
+    dirs.push(PathBuf::from(format!("/tmp/{sock_dir}-{uid}")));
 
     // Tier 5: system membrane sockets (root-managed primals with relaxed perms)
     dirs.push(PathBuf::from("/run/membrane"));

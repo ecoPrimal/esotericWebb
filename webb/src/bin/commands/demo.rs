@@ -13,10 +13,6 @@ type Result<T> = esoteric_webb::error::Result<T>;
 #[derive(Debug, Deserialize)]
 struct DemoScenario {
     name: String,
-    #[expect(
-        dead_code,
-        reason = "deserialized for schema completeness, not yet displayed"
-    )]
     description: String,
     steps: Vec<DemoStep>,
     verification: Verification,
@@ -49,10 +45,6 @@ struct EnrichmentExpectation {
     #[serde(default)]
     scene_pushed: Option<bool>,
     #[serde(default)]
-    #[expect(
-        dead_code,
-        reason = "deserialized for schema completeness, verification deferred"
-    )]
     voice_notes_possible: Option<bool>,
 }
 
@@ -96,6 +88,7 @@ pub(super) fn run(content_path: &str, scenario_path: &str, json: bool) -> Result
 
     if !json {
         println!("=== E2E Demo: {} ===", scenario.name);
+        println!("    {}", scenario.description);
         println!();
     }
 
@@ -169,6 +162,15 @@ pub(super) fn run(content_path: &str, scenario_path: &str, json: bool) -> Result
                     && ctx.enrichment.scene_pushed
                 {
                     scene_pushes += 1;
+                }
+
+                if let Some(expected_possible) = step.expected.enrichment.voice_notes_possible {
+                    let has_notes = !ctx.enrichment.voice_notes.is_empty();
+                    if expected_possible && !has_notes {
+                        tracing::debug!(
+                            "step {step_num}: voice_notes expected but not produced (degraded AI)"
+                        );
+                    }
                 }
 
                 if let Some(ref node) = step.expected.state.current_node {

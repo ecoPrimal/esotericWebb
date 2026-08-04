@@ -11,8 +11,8 @@
 mod types;
 
 pub use types::{
-    AbilityDef, HasId, LieInfo, NpcDef, NpcTrustReward, RuleEntry, RuleModifier, RulesetCert,
-    SceneContent, WorldMeta,
+    AbilityDef, HasId, LieInfo, LocationDef, NpcDef, NpcTrustReward, RuleEntry, RuleModifier,
+    RulesetCert, SceneContent, WorldMeta,
 };
 
 use std::collections::HashMap;
@@ -30,8 +30,8 @@ pub struct ContentBundle {
     pub meta: WorldMeta,
     /// The narrative graph.
     pub narrative: NarrativeGraph,
-    /// World definitions (keyed by world ID).
-    pub worlds: HashMap<String, serde_json::Value>,
+    /// Location definitions (keyed by location ID, from `worlds/`).
+    pub worlds: HashMap<String, LocationDef>,
     /// NPC definitions (keyed by NPC ID).
     pub npcs: HashMap<String, NpcDef>,
     /// Ability definitions (keyed by ability ID).
@@ -65,7 +65,7 @@ impl ContentBundle {
         let scenes = load_yaml_dir_with_diag::<SceneContent>(base, "scenes", &mut warnings);
         let abilities = load_yaml_dir_with_diag::<AbilityDef>(base, "abilities", &mut warnings);
 
-        let worlds = load_raw_yaml_dir(base, "worlds");
+        let worlds = load_yaml_dir_with_diag::<LocationDef>(base, "worlds", &mut warnings);
         let npcs = load_yaml_dir_with_diag::<NpcDef>(base, "npcs", &mut warnings);
         let rulesets = load_yaml_dir_with_diag::<RulesetCert>(base, "rulesets", &mut warnings);
 
@@ -238,10 +238,16 @@ fn load_yaml_dir_with_diag<T: for<'de> Deserialize<'de> + HasId + 'static>(
                 .file_name()
                 .and_then(|n| n.to_str())
                 .unwrap_or("unknown");
+            let stem = path
+                .file_stem()
+                .and_then(|s| s.to_str())
+                .unwrap_or("unknown");
             match std::fs::read_to_string(&path) {
                 Ok(content) => match serde_yaml::from_str::<T>(&content) {
                     Ok(item) => {
-                        map.insert(item.get_id().to_owned(), item);
+                        let id = item.get_id();
+                        let key = if id.is_empty() { stem } else { id };
+                        map.insert(key.to_owned(), item);
                     }
                     Err(e) => {
                         warnings.push(format!("{subdir}/{fname}: parse error: {e}"));
@@ -249,30 +255,6 @@ fn load_yaml_dir_with_diag<T: for<'de> Deserialize<'de> + HasId + 'static>(
                 },
                 Err(e) => {
                     warnings.push(format!("{subdir}/{fname}: read error: {e}"));
-                }
-            }
-        }
-    }
-    map
-}
-
-fn load_raw_yaml_dir(base: &Path, subdir: &str) -> HashMap<String, serde_json::Value> {
-    let mut map = HashMap::new();
-    let dir = base.join(subdir);
-    let Ok(entries) = std::fs::read_dir(&dir) else {
-        return map;
-    };
-    for entry in entries.flatten() {
-        let path = entry.path();
-        if path.extension().and_then(|e| e.to_str()) == Some("yaml") {
-            if let Ok(content) = std::fs::read_to_string(&path) {
-                if let Ok(value) = serde_yaml::from_str::<serde_json::Value>(&content) {
-                    let id = path
-                        .file_stem()
-                        .and_then(|s| s.to_str())
-                        .unwrap_or("unknown")
-                        .to_owned();
-                    map.insert(id, value);
                 }
             }
         }

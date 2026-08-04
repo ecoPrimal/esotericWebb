@@ -13,7 +13,10 @@ type Result<T> = esoteric_webb::error::Result<T>;
 #[derive(Debug, Deserialize)]
 struct DemoScenario {
     name: String,
-    #[allow(dead_code)]
+    #[expect(
+        dead_code,
+        reason = "deserialized for schema completeness, not yet displayed"
+    )]
     description: String,
     steps: Vec<DemoStep>,
     verification: Verification,
@@ -46,7 +49,10 @@ struct EnrichmentExpectation {
     #[serde(default)]
     scene_pushed: Option<bool>,
     #[serde(default)]
-    #[allow(dead_code)]
+    #[expect(
+        dead_code,
+        reason = "deserialized for schema completeness, verification deferred"
+    )]
     voice_notes_possible: Option<bool>,
 }
 

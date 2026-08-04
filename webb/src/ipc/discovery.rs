@@ -330,7 +330,7 @@ impl PrimalRegistry {
     /// Discovery is capability-based: if a domain is already reachable via
     /// UDS or TCP, the HTTP probe is skipped.
     fn discover_http_well_known(&mut self) {
-        use super::primal_names::domain;
+        use super::primal_names::{PETALTONGUE, SONGBIRD, domain};
 
         struct WellKnownHttp {
             domain: &'static str,
@@ -342,13 +342,13 @@ impl PrimalRegistry {
         let well_known: &[WellKnownHttp] = &[
             WellKnownHttp {
                 domain: domain::MESH,
-                name: "songbird",
+                name: SONGBIRD,
                 path: "/jsonrpc",
                 ports: &[7700, 7780, 8080],
             },
             WellKnownHttp {
                 domain: domain::VISUALIZATION,
-                name: "petaltongue",
+                name: PETALTONGUE,
                 path: "/health",
                 ports: &[3001, 3000, 8090],
             },
@@ -384,10 +384,10 @@ impl PrimalRegistry {
     /// For primals that speak raw NDJSON over TCP (not HTTP), this probes
     /// known ports and registers them as TCP addresses for direct connection.
     fn discover_tcp_well_known(&mut self) {
-        use super::primal_names::domain;
+        use super::primal_names::{NESTGATE, domain};
 
         const WELL_KNOWN_TCP: &[(&str, &str, &[u16])] =
-            &[(domain::STORAGE, "nestgate", &[8080, 8083, 8091])];
+            &[(domain::STORAGE, NESTGATE, &[8080, 8083, 8091])];
 
         for &(domain, name, ports) in WELL_KNOWN_TCP {
             if let Some(ep) = self.by_domain.get(domain) {

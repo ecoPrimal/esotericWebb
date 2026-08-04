@@ -21,6 +21,29 @@ pub struct WorldMeta {
     pub description: String,
 }
 
+/// A location/world definition (loaded from `worlds/*.yaml`).
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct LocationDef {
+    /// Location identifier (derived from filename if not present).
+    #[serde(default)]
+    pub id: String,
+    /// Display name of the location.
+    #[serde(default)]
+    pub name: String,
+    /// Location description.
+    #[serde(default)]
+    pub description: String,
+    /// Tags for categorization (e.g. "indoor", "urban", "occult").
+    #[serde(default)]
+    pub tags: Vec<String>,
+    /// Ambient properties (mood, lighting, sound).
+    #[serde(default)]
+    pub ambient: HashMap<String, String>,
+    /// Connected locations (exit targets).
+    #[serde(default)]
+    pub exits: Vec<String>,
+}
+
 /// A scene's content (loaded from YAML).
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SceneContent {
@@ -232,6 +255,12 @@ impl HasId for AbilityDef {
 }
 
 impl HasId for SceneContent {
+    fn get_id(&self) -> &str {
+        &self.id
+    }
+}
+
+impl HasId for LocationDef {
     fn get_id(&self) -> &str {
         &self.id
     }

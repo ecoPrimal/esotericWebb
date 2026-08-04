@@ -51,6 +51,9 @@ pub const CAPABILITIES: &[&str] = &[
     "session.narrate",
     "session.graph",
     "session.metrics",
+    "session.poll_input",
+    // Dispatch (G18 signal integration)
+    "signal.dispatch",
     // Introspection (Wave 107)
     "method.describe",
     // MCP
@@ -169,7 +172,7 @@ mod tests {
 
     #[test]
     fn capabilities_count() {
-        assert_eq!(CAPABILITIES.len(), 26);
+        assert_eq!(CAPABILITIES.len(), 28);
     }
 
     #[test]
@@ -181,6 +184,7 @@ mod tests {
             "primal.",
             "webb.",
             "session.",
+            "signal.",
             "method.",
             "tools.",
         ];

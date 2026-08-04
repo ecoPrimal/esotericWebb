@@ -135,6 +135,10 @@ description = "Narrative DAG as DOT with live session overlay"
 method = "session.metrics"
 description = "Session engagement metrics for game science / DDA (V13)"
 
+[[capabilities]]
+method = "session.poll_input"
+description = "Poll petalTongue for player input events (live GUI interaction)"
+
 # ── Introspection (stable — Wave 107, barraCuda pattern) ──
 
 [introspection]

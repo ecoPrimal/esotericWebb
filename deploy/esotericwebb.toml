@@ -45,6 +45,10 @@ capabilities = [
     "session.history",
     "session.narrate",
     "session.graph",
+    "session.metrics",
+    "session.poll_input",
+    "signal.dispatch",
+    "method.describe",
     "tools.list",
     "tools.call",
 ]

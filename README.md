@@ -13,7 +13,7 @@
 | **Prod unwraps** | 0 |
 | **Files >800L** | 0 (max: director/mod.rs 750L) |
 | **Bridge methods** | 35 (all domains, all degrading, composition-first) |
-| **Capabilities exposed** | 27 (sourDough + lifecycle + narrative + session + introspection + MCP) |
+| **Capabilities exposed** | 28 (sourDough + lifecycle + narrative + session + dispatch + introspection + MCP) |
 | **Primals consumed** | 9 domains (ai, viz, dag, lineage, compute, storage, provenance, crypto, mesh) |
 | **Live primals (ironGate)** | 8/9 healthy (zero-config discovery) |
 | **Transports** | NDJSON/TCP, UDS, UDS+BTSP, HTTP POST (`/jsonrpc`), REST health |

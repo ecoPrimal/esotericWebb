@@ -13,12 +13,15 @@
 #   3. Where esotericWebb sits in the composition topology
 #   4. How to declare the cell LIVE vs DEGRADED
 #
-# Usage:
-#   biomeos deploy --graph graphs/esotericwebb_cell.toml --mode attach
+# Usage (operator, biomeOS CLI):
+#   biomeos nucleus attach --cell graphs/esotericwebb_cell.toml
+#
+# Usage (self-registering, esotericWebb --mode attach):
+#   esotericwebb serve --content content/ --cell graphs/esotericwebb_cell.toml --mode attach --listen 0.0.0.0:8090
 #
 # Gate:    ironGate (NUCLEUS 13/13)
 # Target:  First live cell composition boot in the ecosystem
-# Wave:    155p
+# Wave:    155v (biomeOS v4.57 cell attach SHIPPED)
 
 [cell]
 id = "esotericwebb"
@@ -111,7 +114,7 @@ degradation = "No GPU compute offload. CPU-only game science."
 
 [cell.endpoint]
 binary = "esotericwebb"
-args = ["serve", "--content", "content/", "--port", "8090"]
+args = ["serve", "--content", "content/", "--cell", "graphs/esotericwebb_cell.toml", "--mode", "attach", "--listen", "0.0.0.0:8090"]
 socket = "${XDG_RUNTIME_DIR}/biomeos/esotericwebb.sock"
 tcp = "127.0.0.1:8090"
 capabilities = [
@@ -119,9 +122,11 @@ capabilities = [
     "health.readiness",
     "health.check",
     "health.version",
+    "health.drain",
     "identity.get",
     "capabilities.list",
     "primal.announce",
+    "primal.info",
     "webb.health",
     "webb.liveness",
     "webb.readiness",
@@ -135,8 +140,12 @@ capabilities = [
     "session.history",
     "session.narrate",
     "session.graph",
+    "session.metrics",
+    "session.poll_input",
+    "method.describe",
     "tools.list",
     "tools.call",
+    "signal.dispatch",
 ]
 
 # ── Liveness gates (validation sequence) ───────────────────────────────

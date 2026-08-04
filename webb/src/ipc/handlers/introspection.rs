@@ -210,6 +210,23 @@ static METHODS: &[MethodDescriptor] = &[
         params: None,
         access: "public",
     },
+    MethodDescriptor {
+        method: "session.poll_input",
+        description: "Poll petalTongue for player input events (live GUI interaction)",
+        domain: "session",
+        stability: "stable",
+        params: None,
+        access: "public",
+    },
+    // Dispatch (G18 signal integration)
+    MethodDescriptor {
+        method: "signal.dispatch",
+        description: "Execute a planned step from squirrel G18 signal dispatch",
+        domain: "signal",
+        stability: "evolving",
+        params: Some("{ tool: string, args: object }"),
+        access: "public",
+    },
     // Introspection
     MethodDescriptor {
         method: "method.describe",

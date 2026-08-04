@@ -2,6 +2,42 @@
 
 All notable changes to Esoteric Webb are documented here.
 
+## V31 — Cell Attachment Protocol (Aug 4, 2026)
+
+### Cell attach mode (`--mode attach`)
+
+- New `--mode attach` CLI flag: registers esotericWebb with biomeOS as a
+  managed cell via `graph.cell.attach`. Reports health status at registration.
+- `graph.cell.health` bridge method: periodic health status push to biomeOS.
+- Graceful degradation: when biomeOS doesn't yet support `graph.cell.attach`,
+  Webb continues operating unmanaged (standalone mode).
+- `bridge/lifecycle.rs` extracted: announce, cell attach, cell health report,
+  mesh route registration. `domains.rs` reduced 780→697 lines.
+
+### Signed provenance (V30c)
+
+- bearDog `crypto.sign` wired into provenance vertex pipeline: DAG vertices
+  now include a signature field when the crypto domain is available.
+- Tracks `"crypto"` in `primals_reached` when signing succeeds.
+- Degrades gracefully when bearDog is absent (signature field is null).
+
+### Batch chunking alignment (V30c)
+
+- `DAG_BATCH_MAX` constant (200) aligned with rhizoCrypt upstream spec.
+- `dag_event_batch` chunks large event slices respecting batch limit.
+
+### Deep debt (V30d)
+
+- `HOSTNAME` constant added to `env_keys`; wired in `niche::gate_id()`.
+- Inline `"biomeos"` socket dir strings replaced with `ECOSYSTEM_SOCKET_DIR`.
+- `demo.rs` dead fields evolved: description displayed, voice_notes verified.
+- Zero raw env var strings remain in production code.
+
+### Stats
+
+- 484 tests, 0 clippy warnings, 0 unsafe, 0 `#[allow]` in production.
+- All files under 800 lines (max: director/mod.rs 750L).
+
 ## V30 — Cell Graph Validation + Batch Provenance (Aug 4, 2026)
 
 ### Cell attach mode

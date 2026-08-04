@@ -38,12 +38,13 @@ wateringHole/
 
 | Handoff | Direction | Summary |
 |---------|-----------|---------|
-| `ESOTERICWEBB_V30_CELL_VALIDATION_AUG04_2026.md` | Outbound | V30 cell graph validation, batch provenance, typed LocationDef, zero #[allow] |
+| `ESOTERICWEBB_V31_CELL_ATTACH_AUG04_2026.md` | Outbound | V31 cell attachment protocol, signed provenance, batch chunking, lifecycle extraction |
 
 ## Archived handoffs (fossil record)
 
 | Handoff | Direction | Summary |
 |---------|-----------|---------|
+| `ESOTERICWEBB_V30_CELL_VALIDATION_AUG04_2026.md` | Outbound | V30 cell graph validation, batch provenance, typed LocationDef, zero #[allow] |
 | `ESOTERICWEBB_V29_PETALTONGUE_INTEGRATION_AUG03_2026.md` | Outbound | V29 petalTongue grammar/animation, WebGL frontend, live site, refactors |
 | `ESOTERICWEBB_V26_IRONGATE_DEEP_DEBT_AUG03_2026.md` | Outbound | V23–V26 deep debt on ironGate, 8/9 live, patterns for upstream |
 | `ESOTERICWEBB_WAVE150O_RESTART_AAR_JUL20_2026.md` | Outbound | Service restart, scorecard corrections (0 prod unwraps, 0 >800L) |

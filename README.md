@@ -2,9 +2,9 @@
 
 | | |
 |---|---|
-| **Version** | V30 |
-| **Tests** | 482 |
-| **Rust files** | 65 (~16.2k LOC production, ~18.7k total) |
+| **Version** | V31 |
+| **Tests** | 484 |
+| **Rust files** | 66 (~16.4k LOC production, ~19.4k total) |
 | **Experiments** | 6 (exp001–exp006) |
 | **MSRV** | 1.87 (edition 2024) |
 | **License** | AGPL-3.0 + ORC + CC-BY-SA 4.0 |
@@ -12,7 +12,7 @@
 | **C deps** | Zero — all pure Rust (noyalib replaced C libyaml) |
 | **Prod unwraps** | 0 |
 | **Files >800L** | 0 (max: director/mod.rs 750L) |
-| **Bridge methods** | 33 (all domains, all degrading, composition-first) |
+| **Bridge methods** | 35 (all domains, all degrading, composition-first) |
 | **Capabilities exposed** | 27 (sourDough + lifecycle + narrative + session + introspection + MCP) |
 | **Primals consumed** | 9 domains (ai, viz, dag, lineage, compute, storage, provenance, crypto, mesh) |
 | **Live primals (ironGate)** | 8/9 healthy (zero-config discovery) |
@@ -20,10 +20,11 @@
 | **Frontend** | `webb.primals.eco` — WebGL scene canvas + SSE streaming, zero external deps |
 | **Scene push** | `visualization.render.scene` + grammar-of-graphics + animation pipeline |
 | **Discovery** | 5-tier: biomeOS XDG, `/run/membrane`, env override, TCP well-known, HTTP REST |
-| **Cell graph** | `graphs/esotericwebb_cell.toml` — biomeOS composition topology |
-| **Cell graph** | `--cell graphs/esotericwebb_cell.toml` — DEGRADED (8/9 primals) |
-| **Batch provenance** | `dag.event.batch` ready (sequential fallback until G31) |
-| **Last validation** | 2026-08-04 (V30, ironGate NUCLEUS) |
+| **Cell graph** | `--cell graphs/esotericwebb_cell.toml` — validates LIVE/DEGRADED/FAILED |
+| **Cell attach** | `--mode attach` — registers with biomeOS as managed cell |
+| **Signed provenance** | bearDog `crypto.sign` in DAG vertices, provenance loop CLOSED |
+| **Batch provenance** | `dag.event.batch` with 200/batch chunking (rhizoCrypt G31 aligned) |
+| **Last validation** | 2026-08-04 (V31, ironGate NUCLEUS, exp006 22/22 PASS) |
 
 **A [sporeGarden](https://github.com/sporeGarden) project — the primals as a composed CRPG.**
 
@@ -125,7 +126,7 @@ to the creative DNA of teams like ZA/UM (Disco Elysium) and Cliche Studio
 webb/              Main Rust crate (narrative engine + IPC + director + bridge)
   src/bin/         CLI binary (serve, validate, preview, graph, new-world)
   src/ipc/         JSON-RPC client, bridge, discovery, launcher, resilience
-  src/ipc/bridge/  Primal bridge (domains.rs, resilience, tests.rs)
+  src/ipc/bridge/  Primal bridge (domains.rs, lifecycle.rs, resilience, tests.rs)
   src/narrative/   Graph, validator, predicate, effect, visualization
   src/director/    Game director (outcome evaluation, DDA integration)
   src/content/     YAML content loader, ability/NPC/scene models

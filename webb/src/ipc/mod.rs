@@ -88,6 +88,8 @@ pub const METHOD_DAG_SESSION_CREATE: &str = "dag.session.create";
 pub const METHOD_DAG_EVENT_APPEND: &str = "dag.event.append";
 /// Batch-append multiple event vertices in a single RPC (rhizoCrypt G31).
 pub const METHOD_DAG_EVENT_BATCH: &str = "dag.event.batch";
+/// Maximum batch size for `dag.event.batch` (aligned with rhizoCrypt 200/batch).
+pub const DAG_BATCH_MAX: usize = 200;
 /// Get the frontier of a session DAG.
 pub const METHOD_DAG_FRONTIER_GET: &str = "dag.frontier.get";
 /// Get the Merkle root of a session DAG.

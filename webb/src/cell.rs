@@ -175,6 +175,7 @@ pub fn validate_cell(graph: &CellGraph, bridge: &PrimalBridge) -> CellStatus {
 }
 
 #[cfg(test)]
+#[expect(clippy::expect_used, reason = "tests use expect for brevity")]
 mod tests {
     use super::*;
 

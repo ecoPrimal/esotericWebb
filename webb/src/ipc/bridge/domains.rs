@@ -417,26 +417,34 @@ impl PrimalBridge {
         if !self.has(domain::DAG) {
             return Ok(vec![None; events.len()]);
         }
-        let params = serde_json::json!({ "events": events });
-        match self.resilient_call(domain::DAG, METHOD_DAG_EVENT_BATCH, params) {
-            Ok(resp) => {
-                if let Some(result) = resp.result {
-                    if let Some(ids) = result.get("vertex_ids").and_then(|v| v.as_array()) {
-                        return Ok(ids.iter().map(|v| v.as_str().map(str::to_owned)).collect());
+
+        let mut all_results = Vec::with_capacity(events.len());
+
+        for chunk in events.chunks(crate::ipc::DAG_BATCH_MAX) {
+            let params = serde_json::json!({ "events": chunk });
+            match self.resilient_call(domain::DAG, METHOD_DAG_EVENT_BATCH, params) {
+                Ok(resp) => {
+                    if let Some(result) = resp.result {
+                        if let Some(ids) = result.get("vertex_ids").and_then(|v| v.as_array()) {
+                            all_results
+                                .extend(ids.iter().map(|v| v.as_str().map(str::to_owned)));
+                            continue;
+                        }
+                    }
+                    all_results.extend(std::iter::repeat_n(None, chunk.len()));
+                }
+                Err(e) if e.is_method_not_found() => {
+                    tracing::debug!(
+                        "dag.event.batch not available — falling back to sequential"
+                    );
+                    for event in chunk {
+                        all_results.push(self.dag_event_append(event)?);
                     }
                 }
-                Ok(vec![None; events.len()])
+                Err(e) => return Err(e),
             }
-            Err(e) if e.is_method_not_found() => {
-                tracing::debug!("dag.event.batch not available — falling back to sequential");
-                let mut results = Vec::with_capacity(events.len());
-                for event in events {
-                    results.push(self.dag_event_append(event)?);
-                }
-                Ok(results)
-            }
-            Err(e) => Err(e),
         }
+        Ok(all_results)
     }
 
     /// Get the current frontier of a session DAG.

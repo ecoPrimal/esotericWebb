@@ -322,11 +322,16 @@ impl GameSession {
         }
     }
 
-    /// Record a provenance vertex via signal dispatch or direct DAG call.
+    /// Record a signed provenance vertex via signal dispatch or direct DAG call.
     ///
     /// Uses `nest.store` signal when biomeOS is available (collapses content.put +
     /// dag.event.append + spine.seal + braid.create into one orchestrated signal).
     /// Falls back to direct `dag.event.append` otherwise.
+    ///
+    /// When bearDog (crypto domain) is available, the vertex data is signed
+    /// via `crypto.sign` and the signature is included in the vertex payload.
+    /// This closes the provenance loop: DAG vertex → signed by bearDog →
+    /// braid sealed by sweetGrass with bearDog signature.
     ///
     /// Provenance is best-effort: failures degrade silently so gameplay
     /// is never blocked by an unavailable or slow primal.
@@ -345,20 +350,38 @@ impl GameSession {
             .map(|prev| vec![prev.node_after.as_str()])
             .unwrap_or_default();
 
+        let data = serde_json::json!({
+            "type": "player_action",
+            "action": action,
+            "node_after": node_after,
+            "turn": self.turn,
+        });
+
+        let signature = match bridge
+            .crypto_sign(&serde_json::json!({"payload": data.to_string()}))
+        {
+            Ok(sig) => sig,
+            Err(e) => {
+                tracing::debug!("provenance signing degraded: {e}");
+                None
+            }
+        };
+
         let vertex = serde_json::json!({
             "session_id": self.state.session_id,
-            "data": {
-                "type": "player_action",
-                "action": action,
-                "node_after": node_after,
-                "turn": self.turn,
-            },
+            "data": data,
             "parents": parent_ids,
+            "signature": signature,
         });
         match bridge.nest_store(&vertex) {
             Ok(true) => {
                 if !self.state.primals_reached.iter().any(|p| p == "dag") {
                     self.state.primals_reached.push("dag".to_owned());
+                }
+                if signature.is_some()
+                    && !self.state.primals_reached.iter().any(|p| p == "crypto")
+                {
+                    self.state.primals_reached.push("crypto".to_owned());
                 }
             }
             Ok(false) => {}

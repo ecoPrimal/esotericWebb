@@ -2,6 +2,34 @@
 
 All notable changes to Esoteric Webb are documented here.
 
+## V30 — Cell Graph Validation + Batch Provenance (Aug 4, 2026)
+
+### Cell attach mode
+
+- `--cell graphs/esotericwebb_cell.toml` flag loads biomeOS cell graph,
+  validates health gates against discovered primals, reports LIVE/DEGRADED/FAILED.
+- `has_direct()` on `PrimalBridge` distinguishes actual primal presence from
+  Neural API routing, giving accurate cell health reporting.
+- `WebbError::Config` variant for structured TOML parse errors.
+
+### Batch provenance (rhizoCrypt G31 readiness)
+
+- `dag.event.batch` bridge method: sends multiple events in one RPC.
+- Falls back to sequential `dag.event.append` on `MethodNotFound`.
+- Ready for upstream rhizoCrypt batch pipeline (12× throughput fix).
+
+### Content model evolution (V30b)
+
+- Typed `LocationDef` replaces untyped `serde_json::Value` for `worlds/`.
+- Dead `load_raw_yaml_dir` function removed.
+- `load_yaml_dir_with_diag` falls back to filename stem when `id` is empty.
+- Discovery well-known tables use canonical `primal_names` constants.
+- `#[allow(dead_code)]` → `#[expect(dead_code, reason = "...")]`.
+
+### Stats
+
+- 482 tests, 0 clippy warnings, 0 unsafe, 0 `#[allow]` in production.
+
 ## V29 — Deep Debt Refactor (Aug 3, 2026)
 
 - **Smart refactoring**: Extracted `session/scene_builder.rs` (224L) from

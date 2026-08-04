@@ -2,9 +2,9 @@
 
 | | |
 |---|---|
-| **Version** | V29 |
-| **Tests** | 477 |
-| **Rust files** | 64 (~18.7k LOC) |
+| **Version** | V30 |
+| **Tests** | 482 |
+| **Rust files** | 65 (~16.2k LOC production, ~18.7k total) |
 | **Experiments** | 6 (exp001–exp006) |
 | **MSRV** | 1.87 (edition 2024) |
 | **License** | AGPL-3.0 + ORC + CC-BY-SA 4.0 |
@@ -21,7 +21,9 @@
 | **Scene push** | `visualization.render.scene` + grammar-of-graphics + animation pipeline |
 | **Discovery** | 5-tier: biomeOS XDG, `/run/membrane`, env override, TCP well-known, HTTP REST |
 | **Cell graph** | `graphs/esotericwebb_cell.toml` — biomeOS composition topology |
-| **Last validation** | 2026-08-03 (V29, ironGate NUCLEUS) |
+| **Cell graph** | `--cell graphs/esotericwebb_cell.toml` — DEGRADED (8/9 primals) |
+| **Batch provenance** | `dag.event.batch` ready (sequential fallback until G31) |
+| **Last validation** | 2026-08-04 (V30, ironGate NUCLEUS) |
 
 **A [sporeGarden](https://github.com/sporeGarden) project — the primals as a composed CRPG.**
 
@@ -62,7 +64,7 @@ engine**. It consumes primals via JSON-RPC IPC — zero Rust crate dependencies
 on any spring. Primals are resolved from `plasmidBin/` or discovered via
 Songbird at runtime.
 
-| Domain | Primal | Role | Status (V29, ironGate) | Key IPC methods |
+| Domain | Primal | Role | Status (V30, ironGate) | Key IPC methods |
 |--------|--------|------|-------------|-----------------|
 | ai | Squirrel | AI narration, NPC dialogue, signal planning | **Live** (UDS) | `ai.query`, `ai.suggest`, `signal.plan`, `signal.dispatch` |
 | visualization | petalTongue | Scene rendering, grammar-of-graphics | **Live** (REST+UDS) | `visualization.render.scene`, `visualization.render.grammar`, `interaction.poll` |

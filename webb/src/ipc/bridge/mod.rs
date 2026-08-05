@@ -307,11 +307,56 @@ impl PrimalBridge {
     // Four patterns that all domain methods share. Using helpers
     // keeps the per-domain methods to 1-3 lines each.
 
+    /// Attempt to reconnect a domain by re-discovering its socket.
+    ///
+    /// Used when a direct connection has gone stale (e.g., the primal restarted).
+    /// Returns `true` if reconnection succeeded and the client was replaced.
+    fn try_reconnect(&mut self, domain: &str) -> bool {
+        let registry = PrimalRegistry::discover();
+        let Some(ep) = registry.by_domain.get(domain) else {
+            return false;
+        };
+
+        let name = DOMAIN_PRIMAL_MAP
+            .iter()
+            .find(|&&(d, _)| d == domain)
+            .map_or(domain, |&(_, n)| n);
+
+        if let Some(ref addr) = ep.tcp_addr {
+            if let Ok(mut client) = PrimalClient::connect_tcp(addr, name) {
+                if client.health_liveness().unwrap_or(false) {
+                    tracing::info!(domain, transport = %format!("tcp:{addr}"), "reconnected");
+                    self.clients.insert(domain.to_owned(), client);
+                    return true;
+                }
+            }
+        }
+
+        if let Some(ref sock) = ep.socket_path {
+            if let Ok(mut client) = PrimalClient::connect(sock, name) {
+                if client.health_liveness().unwrap_or(false) {
+                    tracing::info!(domain, transport = %format!("uds:{}", sock.display()), "reconnected");
+                    self.clients.insert(domain.to_owned(), client);
+                    return true;
+                }
+            }
+            if let Ok(mut client) = PrimalClient::connect_btsp(sock, name) {
+                if client.health_liveness().unwrap_or(false) {
+                    tracing::info!(domain, transport = %format!("uds+btsp:{}", sock.display()), "reconnected");
+                    self.clients.insert(domain.to_owned(), client);
+                    return true;
+                }
+            }
+        }
+
+        false
+    }
+
     /// Resilient call: circuit breaker + retry with exponential backoff.
     ///
     /// Tries the direct domain client first. If absent, falls back to
-    /// Neural API routing via `capability.call`. Returns `Ok(response)`
-    /// on success, or the last error after exhausting retries.
+    /// Neural API routing via `capability.call`. On connection failure after
+    /// retries, attempts one reconnection before giving up.
     fn resilient_call(
         &mut self,
         domain: &str,
@@ -370,6 +415,28 @@ impl PrimalBridge {
                     last_err = Some(e);
                     if attempt < max {
                         std::thread::sleep(self.retry_policy.delay_for_attempt(attempt));
+                    }
+                }
+            }
+        }
+
+        // All retries exhausted — attempt reconnection before giving up.
+        if last_err
+            .as_ref()
+            .is_some_and(IpcError::is_connection_error)
+            && self.try_reconnect(domain)
+        {
+            tracing::info!(domain, method, "retrying after reconnect");
+            if let Some(client) = self.clients.get_mut(domain) {
+                match client.call(method, params) {
+                    Ok(resp) => {
+                        if let Some(cb) = self.circuits.get(domain) {
+                            cb.record_success();
+                        }
+                        return Ok(resp);
+                    }
+                    Err(e) => {
+                        last_err = Some(e);
                     }
                 }
             }

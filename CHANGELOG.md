@@ -2,6 +2,32 @@
 
 All notable changes to Esoteric Webb are documented here.
 
+## V31c — Capability Parity + Bridge Reconnection (Aug 5, 2026)
+
+### Capability parity (V31b)
+
+- `niche::CAPABILITIES` expanded 26→28: added `session.poll_input` and
+  `signal.dispatch` (both were wired handlers missing from registry).
+- `capability_registry.toml`, deploy fragment, cell graph, and introspection
+  descriptors all aligned to 28 methods.
+- Cell graph aligned with biomeOS v4.57 `nucleus attach` protocol: usage
+  docs, endpoint args (`--cell --mode attach --listen`), wave reference.
+- `esotericwebb.service` systemd unit updated with cell-attach flags.
+
+### Bridge reconnection (V31c)
+
+- `try_reconnect(domain)`: when retries exhaust with a connection error,
+  the bridge re-discovers the domain socket and attempts a fresh connection.
+  Handles long-running sessions where primals restart (e.g., petalTongue).
+- One reconnect attempt per failure cycle — no infinite loops.
+- `bridge/mod.rs` at 534 lines (well under 800L limit).
+
+### Stats
+
+- 484 tests, 0 clippy warnings, 0 unsafe, 28 capabilities.
+- Live: 7/9 primals connected on ironGate (viz+compute blocked by membrane
+  socket permissions — upstream issue, graceful degradation working).
+
 ## V31 — Cell Attachment Protocol (Aug 4, 2026)
 
 ### Cell attach mode (`--mode attach`)

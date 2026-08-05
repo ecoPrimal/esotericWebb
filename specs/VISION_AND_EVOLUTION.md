@@ -38,7 +38,7 @@ this identity: they are compositions for deployment, not science workspaces.
 | Session | Stateful game loop — `act()` pipeline with 6-stage primal enrichment | Tested |
 | Autoplay | Heuristic AI-as-player with novelty tracking, stale detection | Solid |
 | IPC | JSON-RPC 2.0 over UDS/TCP, capability discovery, circuit breakers, retry | Architecturally mature |
-| Bridge | Runtime coordinator for 7 primal domains with graceful degradation | V6 |
+| Bridge | Runtime coordinator for 9 primal domains with graceful degradation + reconnection | V31c |
 | CLI | UniBin: `serve`, `validate`, `preview`, `autoplay`, `graph`, `new-world`, `status` | Complete |
 
 ### Quality metrics (V6)

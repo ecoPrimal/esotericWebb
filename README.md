@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Version** | V31 |
+| **Version** | V31c |
 | **Tests** | 484 |
 | **Rust files** | 66 (~16.4k LOC production, ~19.4k total) |
 | **Experiments** | 6 (exp001–exp006) |
@@ -12,10 +12,10 @@
 | **C deps** | Zero — all pure Rust (noyalib replaced C libyaml) |
 | **Prod unwraps** | 0 |
 | **Files >800L** | 0 (max: director/mod.rs 750L) |
-| **Bridge methods** | 35 (all domains, all degrading, composition-first) |
+| **Bridge methods** | 35 (all domains, all degrading, reconnection-capable) |
 | **Capabilities exposed** | 28 (sourDough + lifecycle + narrative + session + dispatch + introspection + MCP) |
 | **Primals consumed** | 9 domains (ai, viz, dag, lineage, compute, storage, provenance, crypto, mesh) |
-| **Live primals (ironGate)** | 8/9 healthy (zero-config discovery) |
+| **Live primals (ironGate)** | 7/9 connected (viz+compute blocked by membrane socket perms) |
 | **Transports** | NDJSON/TCP, UDS, UDS+BTSP, HTTP POST (`/jsonrpc`), REST health |
 | **Frontend** | `webb.primals.eco` — WebGL scene canvas + SSE streaming, zero external deps |
 | **Scene push** | `visualization.render.scene` + grammar-of-graphics + animation pipeline |
@@ -24,12 +24,13 @@
 | **Cell attach** | `--mode attach` — registers with biomeOS as managed cell |
 | **Signed provenance** | bearDog `crypto.sign` in DAG vertices, provenance loop CLOSED |
 | **Batch provenance** | `dag.event.batch` with 200/batch chunking (rhizoCrypt G31 aligned) |
-| **Last validation** | 2026-08-04 (V31, ironGate NUCLEUS, exp006 22/22 PASS) |
+| **Reconnection** | Auto-reconnects stale primal connections on failure (handles restarts) |
+| **Last validation** | 2026-08-05 (V31c, ironGate NUCLEUS, G18 dispatch LIVE, 9 providers) |
 
 **A [sporeGarden](https://github.com/sporeGarden) project — the primals as a composed CRPG.**
 
 **Live**: `webb.primals.eco` (ironGate:8090 via golgi reverse proxy, WireGuard mesh)  
-**Deployed**: ironGate NUCLEUS (8/9 primals, systemd user unit, `esotericwebb.service`)
+**Deployed**: ironGate NUCLEUS (7/9 primals, cell-attach mode, `esotericwebb.service`)
 
 Esoteric Webb is not a spring. It is a standalone cross-evolution substrate
 that composes deployed primals (genomeBins/ecoBins from `plasmidBin/`) into

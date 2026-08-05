@@ -38,13 +38,14 @@ wateringHole/
 
 | Handoff | Direction | Summary |
 |---------|-----------|---------|
-| `ESOTERICWEBB_V31B_LIVE_CELL_BOOT_AAR_AUG04_2026.md` | Outbound | V31b live cell boot AAR — 8/9 primals, 28 caps, remaining issues for upstream |
-| `ESOTERICWEBB_V31_CELL_ATTACH_AUG04_2026.md` | Outbound | V31 cell attachment protocol, signed provenance, batch chunking, lifecycle extraction |
+| `ESOTERICWEBB_V31C_RECONNECT_AUG05_2026.md` | Outbound | V31c bridge reconnection, membrane socket permissions issue for upstream |
 
 ## Archived handoffs (fossil record)
 
 | Handoff | Direction | Summary |
 |---------|-----------|---------|
+| `ESOTERICWEBB_V31B_LIVE_CELL_BOOT_AAR_AUG04_2026.md` | Outbound | V31b live cell boot AAR — 8/9 primals, 28 caps, remaining issues for upstream |
+| `ESOTERICWEBB_V31_CELL_ATTACH_AUG04_2026.md` | Outbound | V31 cell attachment protocol, signed provenance, batch chunking, lifecycle extraction |
 | `ESOTERICWEBB_V30_CELL_VALIDATION_AUG04_2026.md` | Outbound | V30 cell graph validation, batch provenance, typed LocationDef, zero #[allow] |
 | `ESOTERICWEBB_V29_PETALTONGUE_INTEGRATION_AUG03_2026.md` | Outbound | V29 petalTongue grammar/animation, WebGL frontend, live site, refactors |
 | `ESOTERICWEBB_V26_IRONGATE_DEEP_DEBT_AUG03_2026.md` | Outbound | V23–V26 deep debt on ironGate, 8/9 live, patterns for upstream |

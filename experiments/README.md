@@ -5,7 +5,7 @@ binary crate that exercises a specific capability or composition pattern.
 Experiments use a **shared validation harness** (`check_bool` / `check_skip`)
 and exit with a summary of pass/fail/skip counts.
 
-**Status**: 6 experiments, all passing (V22, Jul 21, 2026)
+**Status**: 6 experiments, all passing (V31c, Aug 5, 2026 — exp006 21/22 PASS on ironGate NUCLEUS)
 
 ## Running
 

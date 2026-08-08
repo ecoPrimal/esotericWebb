@@ -38,12 +38,13 @@ wateringHole/
 
 | Handoff | Direction | Summary |
 |---------|-----------|---------|
-| `ESOTERICWEBB_V31C_RECONNECT_AUG05_2026.md` | Outbound | V31c bridge reconnection, membrane socket permissions issue for upstream |
+| `ESOTERICWEBB_V32_IRONGATE_REDEPLOY_AAR_AUG08_2026.md` | Outbound | V32 ironGate G68 redeploy AAR — 13/13 ALIVE, Cell LIVE, upstream issues |
 
 ## Archived handoffs (fossil record)
 
 | Handoff | Direction | Summary |
 |---------|-----------|---------|
+| `ESOTERICWEBB_V31C_RECONNECT_AUG05_2026.md` | Outbound | V31c bridge reconnection, membrane socket permissions issue for upstream |
 | `ESOTERICWEBB_V31B_LIVE_CELL_BOOT_AAR_AUG04_2026.md` | Outbound | V31b live cell boot AAR — 8/9 primals, 28 caps, remaining issues for upstream |
 | `ESOTERICWEBB_V31_CELL_ATTACH_AUG04_2026.md` | Outbound | V31 cell attachment protocol, signed provenance, batch chunking, lifecycle extraction |
 | `ESOTERICWEBB_V30_CELL_VALIDATION_AUG04_2026.md` | Outbound | V30 cell graph validation, batch provenance, typed LocationDef, zero #[allow] |

@@ -2,6 +2,33 @@
 
 All notable changes to Esoteric Webb are documented here.
 
+## V32 — ironGate G68 Redeploy + 13/13 NUCLEUS (Aug 8, 2026)
+
+### Gate redeploy (Wave 157a)
+
+- G68 depot binaries pulled from golgi via rsync (17 musl binaries, Aug 8).
+- Membrane socket permissions fixed: `chgrp biomeos /run/membrane/*.sock`.
+- `esotericwebb.service` updated: `sg biomeos -c "..."` wrapper to acquire
+  the `biomeos` supplementary group for membrane socket access.
+- esotericWebb now connects to ALL 9 consumed primal domains directly via
+  membrane sockets (UDS + UDS+BTSP + TCP).
+- Cell validation: **LIVE** — 3 required + 6 optional all healthy.
+- Previous 7/9 limitation (viz+compute blocked) fully resolved.
+
+### Membrane NUCLEUS status
+
+- 13/13 primals ALIVE on `/run/membrane/` (system-managed, root-owned).
+- biomeOS v4.57.0 neural-api: 593 registered capabilities.
+- toadStool S369 (ioctl fix, hw-safe cross-arch) deployed.
+- SSH discipline: zero GitHub remotes remaining on ironGate.
+- K-Derm ENFORCED: all routes through Forgejo (git.primals.eco).
+
+### Stats
+
+- 484 tests, 0 clippy warnings, 0 unsafe, 28 capabilities.
+- Live site: `webb.primals.eco` 200 OK (HTTPS via Caddy on golgi).
+- Cell: LIVE (9/9 domains connected via membrane + XDG discovery).
+
 ## V31c — Capability Parity + Bridge Reconnection (Aug 5, 2026)
 
 ### Capability parity (V31b)

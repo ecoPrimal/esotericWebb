@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Version** | V31c |
+| **Version** | V32 |
 | **Tests** | 484 |
 | **Rust files** | 66 (~16.4k LOC production, ~19.4k total) |
 | **Experiments** | 6 (exp001–exp006) |
@@ -15,7 +15,7 @@
 | **Bridge methods** | 35 (all domains, all degrading, reconnection-capable) |
 | **Capabilities exposed** | 28 (sourDough + lifecycle + narrative + session + dispatch + introspection + MCP) |
 | **Primals consumed** | 9 domains (ai, viz, dag, lineage, compute, storage, provenance, crypto, mesh) |
-| **Live primals (ironGate)** | 7/9 connected (viz+compute blocked by membrane socket perms) |
+| **Live primals (ironGate)** | **9/9 connected** (13/13 membrane ALIVE via biomeos group) |
 | **Transports** | NDJSON/TCP, UDS, UDS+BTSP, HTTP POST (`/jsonrpc`), REST health |
 | **Frontend** | `webb.primals.eco` — WebGL scene canvas + SSE streaming, zero external deps |
 | **Scene push** | `visualization.render.scene` + grammar-of-graphics + animation pipeline |
@@ -25,12 +25,13 @@
 | **Signed provenance** | bearDog `crypto.sign` in DAG vertices, provenance loop CLOSED |
 | **Batch provenance** | `dag.event.batch` with 200/batch chunking (rhizoCrypt G31 aligned) |
 | **Reconnection** | Auto-reconnects stale primal connections on failure (handles restarts) |
-| **Last validation** | 2026-08-05 (V31c, ironGate NUCLEUS, G18 dispatch LIVE, 9 providers) |
+| **Depot** | G68 binaries (17 musl, rsync from golgi depot, all Aug 8 2026) |
+| **Last validation** | 2026-08-08 (V32, ironGate NUCLEUS 13/13, Cell LIVE, G68 depot) |
 
 **A [sporeGarden](https://github.com/sporeGarden) project — the primals as a composed CRPG.**
 
 **Live**: `webb.primals.eco` (ironGate:8090 via golgi reverse proxy, WireGuard mesh)  
-**Deployed**: ironGate NUCLEUS (7/9 primals, cell-attach mode, `esotericwebb.service`)
+**Deployed**: ironGate NUCLEUS (13/13 ALIVE, G68 depot, cell-attach mode, `esotericwebb.service`)
 
 Esoteric Webb is not a spring. It is a standalone cross-evolution substrate
 that composes deployed primals (genomeBins/ecoBins from `plasmidBin/`) into

@@ -36,8 +36,7 @@ use crate::ipc::{
     METHOD_CRYPTO_VERIFY, METHOD_DAG_EVENT_APPEND, METHOD_DAG_EVENT_BATCH, METHOD_DAG_FRONTIER_GET,
     METHOD_DAG_MERKLE_ROOT, METHOD_DAG_QUERY_VERTICES, METHOD_DAG_SESSION_COMPLETE,
     METHOD_DAG_SESSION_CREATE, METHOD_MESH_BONDS, METHOD_MESH_HEALTH, METHOD_MESH_QUERY,
-    METHOD_MESH_TOPOLOGY, METHOD_STORAGE_RETRIEVE, METHOD_STORAGE_STORE, SIGNAL_NEST_COMMIT,
-    SIGNAL_NEST_STORE,
+    METHOD_MESH_TOPOLOGY, METHOD_STORAGE_RETRIEVE, METHOD_STORAGE_STORE,
 };
 
 use super::{PrimalBridge, degraded_summary_limit};
@@ -547,34 +546,47 @@ impl PrimalBridge {
 
     // ── Crypto domain (bearDog) ─────────────────────────────
 
-    /// Sign a payload with the session key (bearDog).
+    /// Sign a message with the session key (bearDog Ed25519).
     ///
-    /// Returns the signature bytes as a hex string. Degrades to `None`
-    /// when bearDog is unavailable — the game continues without
-    /// cryptographic sealing.
+    /// `message` is the raw string to sign — this method base64-encodes it
+    /// before sending to bearDog (which requires base64 `message` param).
+    /// Returns the base64 signature string. Degrades to `None` when bearDog
+    /// is unavailable — the game continues without cryptographic sealing.
     ///
     /// # Errors
     ///
     /// Returns [`IpcError`] if the call fails unexpectedly.
-    pub fn crypto_sign(&mut self, params: &serde_json::Value) -> Result<Option<String>, IpcError> {
-        self.call_extract_id(
-            domain::CRYPTO,
-            METHOD_CRYPTO_SIGN,
-            params.clone(),
-            &["signature", "sig"],
-        )
+    pub fn crypto_sign(&mut self, message: &str) -> Result<Option<String>, IpcError> {
+        use base64::Engine as _;
+        let encoded = base64::engine::general_purpose::STANDARD.encode(message.as_bytes());
+        let params = serde_json::json!({ "message": encoded });
+        self.call_extract_id(domain::CRYPTO, METHOD_CRYPTO_SIGN, params, &["signature", "sig"])
     }
 
-    /// Verify a signed payload (bearDog).
+    /// Verify a signed message (bearDog Ed25519).
     ///
-    /// Returns `true` if the signature is valid, `false` if bearDog
-    /// is unavailable (degradation: unsigned is assumed valid locally).
+    /// Accepts raw `message` string (base64-encodes internally), plus
+    /// `signature` and `public_key` (both base64, as returned by `crypto_sign`).
+    /// Returns `true` if valid, `false` if bearDog is unavailable
+    /// (degradation: unsigned is assumed valid locally).
     ///
     /// # Errors
     ///
     /// Returns [`IpcError`] if the call fails unexpectedly.
-    pub fn crypto_verify(&mut self, params: &serde_json::Value) -> Result<bool, IpcError> {
-        self.call_or_default(domain::CRYPTO, METHOD_CRYPTO_VERIFY, params.clone(), false)
+    pub fn crypto_verify(
+        &mut self,
+        message: &str,
+        signature: &str,
+        public_key: &str,
+    ) -> Result<bool, IpcError> {
+        use base64::Engine as _;
+        let encoded = base64::engine::general_purpose::STANDARD.encode(message.as_bytes());
+        let params = serde_json::json!({
+            "message": encoded,
+            "signature": signature,
+            "public_key": public_key,
+        });
+        self.call_or_default(domain::CRYPTO, METHOD_CRYPTO_VERIFY, params, false)
     }
 
     /// Hash arbitrary data for content-addressable identity (bearDog).
@@ -650,20 +662,10 @@ impl PrimalBridge {
     ///
     /// Returns [`IpcError`] if all paths fail.
     pub fn nest_store(&mut self, params: &serde_json::Value) -> Result<bool, IpcError> {
-        if self.has_neural_api() {
-            let signal_params = serde_json::json!({
-                "signal": SIGNAL_NEST_STORE,
-                "payload": params,
-            });
-            match self.neural_api_call("nest", SIGNAL_NEST_STORE, signal_params) {
-                Ok(resp) if resp.error.is_none() => return Ok(true),
-                Ok(_) | Err(_) => {
-                    tracing::debug!(
-                        "nest.store signal unavailable — falling back to dag.event.append"
-                    );
-                }
-            }
-        }
+        // P0-C mitigation: biomeOS capability.call leaks FDs (14→58K after 4 calls).
+        // Bypass signal dispatch and use direct dag.event.append until P0-C is resolved.
+        // The signal path (nest.store → capability.call) will be re-enabled once biomeOS
+        // ships the socket cleanup fix.
         self.provenance_append(params)
     }
 
@@ -678,20 +680,8 @@ impl PrimalBridge {
     ///
     /// Returns [`IpcError`] if all paths fail.
     pub fn nest_commit(&mut self, params: &serde_json::Value) -> Result<(), IpcError> {
-        if self.has_neural_api() {
-            let signal_params = serde_json::json!({
-                "signal": SIGNAL_NEST_COMMIT,
-                "payload": params,
-            });
-            match self.neural_api_call("nest", SIGNAL_NEST_COMMIT, signal_params) {
-                Ok(resp) if resp.error.is_none() => return Ok(()),
-                Ok(_) | Err(_) => {
-                    tracing::debug!(
-                        "nest.commit signal unavailable — falling back to dag.session.complete"
-                    );
-                }
-            }
-        }
+        // P0-C mitigation: biomeOS capability.call leaks FDs.
+        // Direct path until fix ships.
         self.dag_session_complete(params)
     }
 }

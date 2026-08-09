@@ -253,18 +253,14 @@ fn standalone_has_no_neural_api() {
 #[test]
 fn standalone_crypto_sign_returns_none() {
     let mut bridge = PrimalBridge::standalone();
-    let result = bridge
-        .crypto_sign(&serde_json::json!({"payload": "test"}))
-        .unwrap();
+    let result = bridge.crypto_sign("test message").unwrap();
     assert!(result.is_none());
 }
 
 #[test]
 fn standalone_crypto_verify_returns_false() {
     let mut bridge = PrimalBridge::standalone();
-    let result = bridge
-        .crypto_verify(&serde_json::json!({"payload": "test", "sig": "abc"}))
-        .unwrap();
+    let result = bridge.crypto_verify("test", "sig_b64", "pubkey_b64").unwrap();
     assert!(!result);
 }
 

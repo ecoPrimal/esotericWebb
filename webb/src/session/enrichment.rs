@@ -357,9 +357,7 @@ impl GameSession {
             "turn": self.turn,
         });
 
-        let signature = match bridge
-            .crypto_sign(&serde_json::json!({"payload": data.to_string()}))
-        {
+        let signature = match bridge.crypto_sign(&data.to_string()) {
             Ok(sig) => sig,
             Err(e) => {
                 tracing::debug!("provenance signing degraded: {e}");

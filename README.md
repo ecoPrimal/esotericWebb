@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Version** | V32 |
+| **Version** | V32b |
 | **Tests** | 484 |
 | **Rust files** | 66 (~16.4k LOC production, ~19.4k total) |
 | **Experiments** | 6 (exp001–exp006) |
@@ -26,7 +26,7 @@
 | **Batch provenance** | `dag.event.batch` with 200/batch chunking (rhizoCrypt G31 aligned) |
 | **Reconnection** | Auto-reconnects stale primal connections on failure (handles restarts) |
 | **Depot** | G68 binaries (17 musl, rsync from golgi depot, all Aug 8 2026) |
-| **Last validation** | 2026-08-08 (V32, ironGate NUCLEUS 13/13, Cell LIVE, G68 depot) |
+| **Last validation** | 2026-08-09 (V32b, self-audit PASS, P0 mitigated, Cell LIVE 9/9) |
 
 **A [sporeGarden](https://github.com/sporeGarden) project — the primals as a composed CRPG.**
 

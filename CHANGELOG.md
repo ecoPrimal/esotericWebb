@@ -2,6 +2,38 @@
 
 All notable changes to Esoteric Webb are documented here.
 
+## V32b — Vertebrate Self-Audit + P0 Mitigations (Aug 9, 2026)
+
+### P0-A: crypto.sign parameter alignment
+
+- bearDog expects `{"message": "<base64>"}`, we were sending `{"payload": "..."}`.
+- `crypto_sign(&str)` now base64-encodes internally via `base64` crate.
+- `crypto_verify(message, signature, public_key)` typed with proper params.
+- Provenance vertices now produce real Ed25519 signatures.
+
+### P0-C: signal dispatch bypass (FD leak mitigation)
+
+- `nest_store()` and `nest_commit()` bypassed Neural API `capability.call`.
+- Both now call rhizoCrypt directly (`dag.event.append`, `dag.session.complete`).
+- Zero FD leak risk from biomeOS forwarding path.
+- Re-enable signal dispatch once biomeOS ships FD fix.
+
+### Self-audit
+
+- 28 capabilities: all have handlers, all in registry, all in introspection.
+- Unknown methods return `-32601` (no silent health fallback like P0-A bearDog).
+- Zero dead/stub methods.
+
+### Ops
+
+- `LimitNOFILE=65536` in service unit (fleet-wide P1 alignment).
+- UFW rule for 8090 reloaded (was present but unapplied after reboot).
+
+### Stats
+
+- 484 tests, 0 clippy warnings, 0 unsafe, 28 capabilities.
+- Cell LIVE (9/9 domains), webb.primals.eco 200 OK.
+
 ## V32 — ironGate G68 Redeploy + 13/13 NUCLEUS (Aug 8, 2026)
 
 ### Gate redeploy (Wave 157a)

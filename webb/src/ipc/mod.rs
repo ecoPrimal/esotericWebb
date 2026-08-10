@@ -113,6 +113,11 @@ pub const METHOD_CRYPTO_VERIFY: &str = "crypto.verify";
 /// Hash arbitrary data (content-addressable identity).
 pub const METHOD_CRYPTO_HASH: &str = "crypto.hash";
 
+// ── Gossip domain methods (swarmVine) ─────────────────────────
+
+/// Inject a gossip event into the local mesh.
+pub const METHOD_GOSSIP_INJECT: &str = "gossip.inject";
+
 // ── Mesh domain methods (songBird) ─────────────────────────
 
 /// Query the live ecosystem topology.

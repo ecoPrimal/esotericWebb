@@ -148,7 +148,25 @@ impl GameSession {
 
         if let Some(id) = session_id {
             tracing::debug!("provenance session created: {id}");
-            self.state.session_id = id;
+            self.state.session_id.clone_from(&id);
+            self.gossip_session_event("esotericwebb.session.started", &id);
+        }
+    }
+
+    /// Emit a session lifecycle event into the gossip mesh (fire-and-forget).
+    fn gossip_session_event(&mut self, key: &str, session_id: &str) {
+        let Some(bridge) = self.bridge.as_mut() else {
+            return;
+        };
+        let value = serde_json::json!({
+            "gate": "ironGate",
+            "primal": "esotericwebb",
+            "session_id": session_id,
+            "turn": self.turn,
+        })
+        .to_string();
+        if let Err(e) = bridge.gossip_inject("data", key, &value) {
+            tracing::debug!(key, "gossip inject degraded: {e}");
         }
     }
 

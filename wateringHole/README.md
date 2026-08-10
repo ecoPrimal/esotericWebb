@@ -38,12 +38,13 @@ wateringHole/
 
 | Handoff | Direction | Summary |
 |---------|-----------|---------|
-| `ESOTERICWEBB_V32B_VERTEBRATE_AUDIT_AUG09_2026.md` | Outbound | V32b vertebrate self-audit — P0 mitigations, crypto.sign fix, signal bypass |
+| `ESOTERICWEBB_V33_GOSSIP_ENMESH_AUG10_2026.md` | Outbound | V33 gossip mesh enmeshment — swarmVine wired, session lifecycle broadcast |
 
 ## Archived handoffs (fossil record)
 
 | Handoff | Direction | Summary |
 |---------|-----------|---------|
+| `ESOTERICWEBB_V32B_VERTEBRATE_AUDIT_AUG09_2026.md` | Outbound | V32b vertebrate self-audit — P0 mitigations, crypto.sign fix, signal bypass |
 | `ESOTERICWEBB_V32_IRONGATE_REDEPLOY_AAR_AUG08_2026.md` | Outbound | V32 ironGate G68 redeploy AAR — 13/13 ALIVE, Cell LIVE, upstream issues |
 | `ESOTERICWEBB_V31C_RECONNECT_AUG05_2026.md` | Outbound | V31c bridge reconnection, membrane socket permissions issue for upstream |
 | `ESOTERICWEBB_V31B_LIVE_CELL_BOOT_AAR_AUG04_2026.md` | Outbound | V31b live cell boot AAR — 8/9 primals, 28 caps, remaining issues for upstream |

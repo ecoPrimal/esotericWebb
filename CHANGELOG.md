@@ -2,6 +2,30 @@
 
 All notable changes to Esoteric Webb are documented here.
 
+## V33 — Gossip Mesh Enmeshment (Aug 10, 2026)
+
+### Gossip domain wired (swarmVine)
+
+- Added `gossip` domain (swarmVine) to `primal_names` domain map (10 domains total).
+- Discovery finds swarmVine at `$XDG_RUNTIME_DIR/biomeos/swarmvine.sock`.
+- `PrimalBridge::gossip_inject(topic, key, value)` — fire-and-forget method.
+- Session lifecycle events broadcast to mesh: `esotericwebb.session.started`,
+  `esotericwebb.session.completed`.
+- API: `gossip.inject` with `topic` (tower|data|compute), `key`, `value`.
+- Conditional: zero-cost when swarmVine absent (same pattern as rhizoCrypt/loamSpine).
+
+### Cell graph updated
+
+- Added `[[cell.optional]] domain = "gossip"` for swarmVine in `esotericwebb_cell.toml`.
+- Degradation: "No gossip mesh injection. Session lifecycle events not broadcast."
+
+### Stats
+
+- Bridge methods: 35 → 36
+- Primal domains: 9 → 10
+- Tests: 466 (new: `standalone_gossip_inject_is_noop`)
+- 0 clippy warnings, 0 unsafe, 0 files >800L
+
 ## V32b — Vertebrate Self-Audit + P0 Mitigations (Aug 9, 2026)
 
 ### P0-A: crypto.sign parameter alignment

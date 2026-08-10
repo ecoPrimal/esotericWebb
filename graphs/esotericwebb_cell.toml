@@ -104,6 +104,13 @@ health = "health.liveness"
 degradation = "No content attribution. Playthrough not sealed."
 
 [[cell.optional]]
+domain = "gossip"
+primal = "swarmvine"
+methods = ["gossip.inject"]
+health = "health.liveness"
+degradation = "No gossip mesh injection. Session lifecycle events not broadcast."
+
+[[cell.optional]]
 domain = "compute"
 primal = "toadstool"
 methods = ["compute.dispatch.submit"]

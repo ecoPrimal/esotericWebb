@@ -2,9 +2,9 @@
 
 | | |
 |---|---|
-| **Version** | V32b |
+| **Version** | V33 |
 | **Tests** | 484 |
-| **Rust files** | 66 (~16.4k LOC production, ~19.4k total) |
+| **Rust files** | 66 (~16.5k LOC production, ~19.5k total) |
 | **Experiments** | 6 (exp001–exp006) |
 | **MSRV** | 1.87 (edition 2024) |
 | **License** | AGPL-3.0 + ORC + CC-BY-SA 4.0 |
@@ -12,10 +12,11 @@
 | **C deps** | Zero — all pure Rust (noyalib replaced C libyaml) |
 | **Prod unwraps** | 0 |
 | **Files >800L** | 0 (max: director/mod.rs 750L) |
-| **Bridge methods** | 35 (all domains, all degrading, reconnection-capable) |
+| **Bridge methods** | 36 (all domains, all degrading, reconnection-capable) |
 | **Capabilities exposed** | 28 (sourDough + lifecycle + narrative + session + dispatch + introspection + MCP) |
-| **Primals consumed** | 9 domains (ai, viz, dag, lineage, compute, storage, provenance, crypto, mesh) |
-| **Live primals (ironGate)** | **9/9 connected** (13/13 membrane ALIVE via biomeos group) |
+| **Primals consumed** | 10 domains (ai, viz, dag, lineage, compute, storage, provenance, crypto, mesh, gossip) |
+| **Live primals (ironGate)** | **9/10 connected** (gossip via swarmVine UDS, toadstool absent) |
+| **Gossip injection** | `gossip.inject` via swarmVine — session lifecycle events broadcast to mesh |
 | **Transports** | NDJSON/TCP, UDS, UDS+BTSP, HTTP POST (`/jsonrpc`), REST health |
 | **Frontend** | `webb.primals.eco` — WebGL scene canvas + SSE streaming, zero external deps |
 | **Scene push** | `visualization.render.scene` + grammar-of-graphics + animation pipeline |
@@ -26,7 +27,7 @@
 | **Batch provenance** | `dag.event.batch` with 200/batch chunking (rhizoCrypt G31 aligned) |
 | **Reconnection** | Auto-reconnects stale primal connections on failure (handles restarts) |
 | **Depot** | G68 binaries (17 musl, rsync from golgi depot, all Aug 8 2026) |
-| **Last validation** | 2026-08-09 (V32b, self-audit PASS, P0 mitigated, Cell LIVE 9/9) |
+| **Last validation** | 2026-08-10 (V33, gossip enmesh LIVE, Cell 9/10 connected) |
 
 **A [sporeGarden](https://github.com/sporeGarden) project — the primals as a composed CRPG.**
 

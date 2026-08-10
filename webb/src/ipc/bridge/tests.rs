@@ -346,3 +346,10 @@ fn standalone_dag_event_batch_returns_nones() {
     assert_eq!(results.len(), 2);
     assert!(results.iter().all(Option::is_none));
 }
+
+#[test]
+fn standalone_gossip_inject_is_noop() {
+    let mut bridge = PrimalBridge::standalone();
+    let result = bridge.gossip_inject("data", "esotericwebb.session.started", r#"{"gate":"ironGate"}"#);
+    assert!(result.is_ok());
+}

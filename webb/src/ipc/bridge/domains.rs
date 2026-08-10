@@ -35,8 +35,8 @@ use crate::ipc::{
     METHOD_CERT_MINT, METHOD_COMPUTE_SUBMIT, METHOD_CRYPTO_HASH, METHOD_CRYPTO_SIGN,
     METHOD_CRYPTO_VERIFY, METHOD_DAG_EVENT_APPEND, METHOD_DAG_EVENT_BATCH, METHOD_DAG_FRONTIER_GET,
     METHOD_DAG_MERKLE_ROOT, METHOD_DAG_QUERY_VERTICES, METHOD_DAG_SESSION_COMPLETE,
-    METHOD_DAG_SESSION_CREATE, METHOD_MESH_BONDS, METHOD_MESH_HEALTH, METHOD_MESH_QUERY,
-    METHOD_MESH_TOPOLOGY, METHOD_STORAGE_RETRIEVE, METHOD_STORAGE_STORE,
+    METHOD_DAG_SESSION_CREATE, METHOD_GOSSIP_INJECT, METHOD_MESH_BONDS, METHOD_MESH_HEALTH,
+    METHOD_MESH_QUERY, METHOD_MESH_TOPOLOGY, METHOD_STORAGE_RETRIEVE, METHOD_STORAGE_STORE,
 };
 
 use super::{PrimalBridge, degraded_summary_limit};
@@ -683,5 +683,25 @@ impl PrimalBridge {
         // P0-C mitigation: biomeOS capability.call leaks FDs.
         // Direct path until fix ships.
         self.dag_session_complete(params)
+    }
+
+    // ── Gossip domain (swarmVine) ─────────────────────────────
+
+    /// Inject a gossip event into the local mesh via swarmVine.
+    ///
+    /// Uses the `gossip.inject` method with `topic` (tower|data|compute),
+    /// `key` (dot-namespaced event identifier), and `value` (event payload).
+    /// Fire-and-forget: degrades silently if swarmVine is unavailable.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`IpcError`] only on unexpected transport failures.
+    pub fn gossip_inject(&mut self, topic: &str, key: &str, value: &str) -> Result<(), IpcError> {
+        let params = serde_json::json!({
+            "topic": topic,
+            "key": key,
+            "value": value,
+        });
+        self.call_fire(domain::GOSSIP, METHOD_GOSSIP_INJECT, params)
     }
 }

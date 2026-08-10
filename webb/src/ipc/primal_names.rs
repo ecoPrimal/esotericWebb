@@ -25,6 +25,8 @@ pub const RHIZOCRYPT: &str = "rhizocrypt";
 pub const LOAMSPINE: &str = "loamspine";
 /// Discovery slug for sweetGrass.
 pub const SWEETGRASS: &str = "sweetgrass";
+/// Discovery slug for swarmVine (gossip mesh).
+pub const SWARMVINE: &str = "swarmvine";
 
 /// Domain identifiers for capability-based discovery.
 pub mod domain {
@@ -46,6 +48,8 @@ pub mod domain {
     pub const CRYPTO: &str = "crypto";
     /// Mesh / discovery domain (songBird).
     pub const MESH: &str = "mesh";
+    /// Gossip domain (swarmVine).
+    pub const GOSSIP: &str = "gossip";
 }
 
 /// Domain-to-default-primal mapping for discovery.
@@ -63,6 +67,7 @@ pub const DOMAIN_PRIMAL_MAP: &[(&str, &str)] = &[
     (domain::PROVENANCE, SWEETGRASS),
     (domain::CRYPTO, BEARDOG),
     (domain::MESH, SONGBIRD),
+    (domain::GOSSIP, SWARMVINE),
 ];
 
 /// Lowercase discovery slug → mixed-case display name.
@@ -86,6 +91,7 @@ pub fn display_name(slug: &str) -> &str {
         "coralreef" => "coralReef",
         "fieldmouse" => "fieldMouse",
         "sourdough" => "sourDough",
+        "swarmvine" => "swarmVine",
         "esotericwebb" => "esotericWebb",
         _ => slug,
     }
@@ -112,6 +118,7 @@ pub fn discovery_slug(display: &str) -> &str {
         "coralReef" => "coralreef",
         "fieldMouse" => "fieldmouse",
         "sourDough" => "sourdough",
+        "swarmVine" => "swarmvine",
         "esotericWebb" => "esotericwebb",
         _ => display,
     }
@@ -169,11 +176,12 @@ mod tests {
 
     #[test]
     fn domain_primal_map_covers_all_domains() {
-        assert_eq!(DOMAIN_PRIMAL_MAP.len(), 9);
+        assert_eq!(DOMAIN_PRIMAL_MAP.len(), 10);
         assert_eq!(primal_for_domain(domain::AI), Some(SQUIRREL));
         assert_eq!(primal_for_domain(domain::DAG), Some(RHIZOCRYPT));
         assert_eq!(primal_for_domain(domain::CRYPTO), Some(BEARDOG));
         assert_eq!(primal_for_domain(domain::MESH), Some(SONGBIRD));
+        assert_eq!(primal_for_domain(domain::GOSSIP), Some(SWARMVINE));
         assert_eq!(primal_for_domain("nonexistent"), None);
     }
 

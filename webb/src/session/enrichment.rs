@@ -309,17 +309,17 @@ impl GameSession {
         }
         let turn = self.turn;
 
-        let Some(bridge) = self.bridge.as_mut() else {
-            return;
-        };
-        let params = serde_json::json!({
-            "session_id": session_id,
-            "turns": turn,
-            "completed": true,
-        });
-        if let Err(e) = bridge.nest_commit(&params) {
-            tracing::debug!("provenance session completion degraded: {e}");
+        if let Some(bridge) = self.bridge.as_mut() {
+            let params = serde_json::json!({
+                "session_id": session_id,
+                "turns": turn,
+                "completed": true,
+            });
+            if let Err(e) = bridge.nest_commit(&params) {
+                tracing::debug!("provenance session completion degraded: {e}");
+            }
         }
+        self.gossip_session_event("esotericwebb.session.completed", &session_id);
     }
 
     /// Record a signed provenance vertex via signal dispatch or direct DAG call.
